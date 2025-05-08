@@ -74,78 +74,32 @@ function showSignup() {
     <button class="low-poly-btn" id="signup-btn">Create Account</button>
     <button class="low-poly-btn" id="back-landing">Back</button>
     <div id="signup-msg" style="color:#6366f1;font-size:0.95em;margin-top:0.7em;"></div>
-  `);
-  app.appendChild(wrap);
-  $('#signup-btn').onclick = signup;
-  $('#back-landing').onclick = showLanding;
-}
-
-// --- LOGIN & SIGNUP (DEDUPED) ---
-function login() {
-  const u = $('#login-username').value.trim().toLowerCase();
-  const p = $('#login-password').value;
-  if (!u || !p) {
-    $('#login-msg').textContent = 'Please enter username and password.';
-    return;
-
-
-
-  }
-}
-function signup() {
-  const u = $('#signup-username').value.trim().toLowerCase();
-  const p = $('#signup-password').value;
-  if (!u || !p) {
-    $('#signup-msg').textContent = 'Please enter username and password.';
-    return;
-  }
-  const users = loadUsers();
-  if (users[u]) {
-    $('#signup-msg').textContent = 'Username already exists.';
-    return;
-  }
-  users[u] = { pw: hash(p) };
-  saveUsers(users);
-  // Show success message and button to go to login, and debug view
-  const app = $('#app');
-  app.innerHTML = '';
-  const wrap = el('div', 'fade-in-up', `
-    <h2>Sign Up</h2>
-    <div style="color:#22b573;font-size:1.1em;margin-bottom:1em;">Account created! You can now login.</div>
-    <button class="low-poly-btn" id="goto-login">Go to Login</button>
-    <button class="low-poly-btn" id="show-users">Show Registered Users (Debug)</button>
-    <div id="users-debug" style="margin-top:1em;font-size:0.9em;color:#555;"></div>
-  `);
-  app.appendChild(wrap);
-  $('#goto-login').onclick = showLogin;
-  $('#show-users').onclick = function() {
-    const users = loadUsers();
-    $('#users-debug').textContent = JSON.stringify(users, null, 2);
-  };
-}
-
-  `);
-  app.appendChild(wrap);
-  $('#goto-login').onclick = showLogin;
-}
-function hash(str) {
   // Simple hash for demo (not secure)
   let h = 0; for (let i = 0; i < str.length; i++) h = ((h<<5)-h)+str.charCodeAt(i); return h.toString();
 }
 
 // --- HUB (Folders & Files) ---
 function showHub() {
+  const username = localStorage.getItem('currentUser');
+  if (!username) {
+    window.location.href = 'login.html';
+    return;
+  }
+  STATE.user = { username };
   const app = $('#app');
   app.innerHTML = '';
   const header = el('div', '', `
-    <h2>Welcome, ${STATE.user.username}</h2>
+    <h2>Welcome, ${username}</h2>
     <button class="low-poly-btn" id="logout-btn">Logout</button>
     <h3>Folders</h3>
     <button class="low-poly-btn" id="add-folder-btn">+ New Folder</button>
     <div id="folders-list"></div>
   `);
   app.appendChild(header);
-  $('#logout-btn').onclick = () => { STATE.user = null; showLogin(); };
+  $('#logout-btn').onclick = function() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'login.html';
+  };
   $('#add-folder-btn').onclick = addFolder;
   renderFolders();
 }
