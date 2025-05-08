@@ -116,6 +116,7 @@ function signup() {
   app.appendChild(wrap);
   $('#goto-login').onclick = showLogin;
 }
+// Only keep the correct login and signup functions
 function login() {
   const u = $('#login-username').value.trim();
   const p = $('#login-password').value;
@@ -129,20 +130,29 @@ function login() {
   }
 }
 function signup() {
-  const u = $('#login-username').value.trim();
-  const p = $('#login-password').value;
+  const u = $('#signup-username').value.trim();
+  const p = $('#signup-password').value;
   if (!u || !p) {
-    $('#login-msg').textContent = 'Please enter username and password.';
+    $('#signup-msg').textContent = 'Please enter username and password.';
     return;
   }
   const users = loadUsers();
   if (users[u]) {
-    $('#login-msg').textContent = 'Username already exists.';
+    $('#signup-msg').textContent = 'Username already exists.';
     return;
   }
   users[u] = { pw: hash(p) };
   saveUsers(users);
-  $('#login-msg').textContent = 'Account created! Please login.';
+  // Show success message and button to go to login
+  const app = $('#app');
+  app.innerHTML = '';
+  const wrap = el('div', 'fade-in-up', `
+    <h2>Sign Up</h2>
+    <div style="color:#22b573;font-size:1.1em;margin-bottom:1em;">Account created! You can now login.</div>
+    <button class="low-poly-btn" id="goto-login">Go to Login</button>
+  `);
+  app.appendChild(wrap);
+  $('#goto-login').onclick = showLogin;
 }
 function hash(str) {
   // Simple hash for demo (not secure)
