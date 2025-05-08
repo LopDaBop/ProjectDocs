@@ -1,91 +1,81 @@
-/* ProjectDocs - Minimalistic Low-Poly Style */
 body {
   margin: 0;
-  font-family: 'Inter', Arial, sans-serif;
-  background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
+  color: #222;
   min-height: 100vh;
-  color: #232946;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
-#app {
-  min-height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.low-poly-btn {
-  background: linear-gradient(120deg, #7f9cf5 60%, #a5b4fc 100%);
-  border: none;
-  border-radius: 12px 24px 8px 16px/16px 8px 24px 12px;
-  color: #fff;
-  font-size: 1.1rem;
-  padding: 0.7em 1.5em;
-  margin: 0.5em;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(127, 156, 245, 0.18);
-  transition: transform 0.15s, box-shadow 0.2s, background 0.3s;
-}
-.low-poly-btn:hover {
-  background: linear-gradient(120deg, #6366f1 60%, #818cf8 100%);
-  transform: translateY(-2px) scale(1.04) rotate(-1deg);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
-}
-/* Animations */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.fade-in-up {
-  animation: fadeInUp 0.5s cubic-bezier(.22,1,.36,1) both;
-}
-.folder, .page {
+
+#app-root {
+  max-width: 720px;
+  margin: 3em auto;
   background: #fff;
-  border-radius: 18px 6px 18px 6px/6px 18px 6px 18px;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
-  margin: 0.5em 0;
-  padding: 1em;
-  transition: box-shadow 0.2s;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px #b6c5e1aa;
+  padding: 2em 2.5em 2.5em 2.5em;
 }
-.folder:hover, .page:hover {
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+
+h1, h2, h3 {
+  font-weight: 600;
+  margin-bottom: 0.5em;
+}
+
+.folder-list, .doc-list {
+  margin: 1.5em 0 0.5em 0;
+  padding: 0;
+  list-style: none;
+}
+.folder-item, .doc-item {
+  background: #f1f5fb;
+  border-radius: 8px;
+  margin-bottom: 0.7em;
+  padding: 0.8em 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: box-shadow 0.15s;
+}
+.folder-item:hover, .doc-item:hover {
+  box-shadow: 0 2px 12px #dbeafe;
+}
+button, .btn {
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1.1em;
+  font-size: 1em;
+  cursor: pointer;
+  margin-left: 0.5em;
+  transition: background 0.15s;
+}
+button:hover, .btn:hover {
+  background: #2563eb;
 }
 input, textarea {
-  border-radius: 8px;
-  border: 1px solid #a5b4fc;
+  font-size: 1em;
   padding: 0.5em;
-  font-size: 1rem;
-  transition: border 0.2s;
-  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid #cbd5e1;
+  margin-bottom: 1em;
   width: 100%;
-  max-width: 400px;
+  box-sizing: border-box;
+  background: #f8fafc;
 }
-input:focus, textarea:focus {
-  outline: none;
-  border: 1.5px solid #6366f1;
+textarea {
+  min-height: 180px;
+  resize: vertical;
 }
-
-/* Center auth forms and limit width */
-.fade-in-up {
-  max-width: 420px;
-  width: 95vw;
-  margin: 2em auto;
-  background: rgba(255,255,255,0.88);
-  padding: 2em 1.5em 2.5em 1.5em;
-  border-radius: 18px;
-  box-shadow: 0 2px 16px rgba(127,156,245,0.10);
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2em;
 }
-
-@media (max-width: 600px) {
-  .fade-in-up {
-    padding: 1.2em 0.5em 1.5em 0.5em;
-    max-width: 98vw;
-  }
-  #app {
-    padding: 0;
-  }
+.fade-in {
+  animation: fadeIn 0.6s;
 }
-
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}

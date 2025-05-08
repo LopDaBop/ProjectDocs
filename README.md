@@ -1,27 +1,21 @@
 # ProjectDocs
 
-A fancy but minimalistic Google Docs-like static site. Create folders and pages, edit your own docs, and enjoy a low-poly, animated UI. All data is stored in your browser (no backend).
+A modern, minimal, single-page app for organizing folders and documents. No login, just instant productivity.
 
 ## Features
-- Login/signup (per-user docs)
-- Create/rename/delete folders and pages
-- Infinite-scroll style text editor (simple textarea)
-- Cool low-poly buttons and subtle animations
-- Only the doc owner can edit; others are view-only
-- All data is local (localStorage)
-- Fully static, deployable to GitHub Pages
+- Create, rename, and delete folders
+- Create, edit, rename, and delete docs inside folders
+- All data persists in your browser (localStorage)
+- Fast, responsive, and clean UI
 
 ## Usage
-- Open index.html or deploy to GitHub Pages
-- Sign up, then login
-- Create folders and pages
-- Edit your own docs. Others are view-only unless you login as that user.
+1. Open `index.html` in your browser.
+2. Start creating folders and docs!
 
-## Limitations
-- Not secure (passwords are hashed but stored locally)
-- Data is per-browser (no sync)
-- For demo/personal use only
+## Tech
+- 100% static: HTML, CSS, JS
+- No build tools or dependencies
 
 ---
 
-Enjoy ProjectDocs!
+MIT License

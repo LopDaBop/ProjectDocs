@@ -1,346 +1,191 @@
-// ProjectDocs: Minimal Main App (Clean Reset)
+// ProjectDocs – Modern Docs & Folders App
+
+// --- State & Persistence ---
+const STORAGE_KEY = 'projectdocs_v2';
+let state = {
+  folders: {}, // {id: {name, docs: [docId]}}
+  docs: {},    // {id: {folderId, name, content}}
+  selectedFolder: null,
+  selectedDoc: null
+};
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function load() {
+  const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  state.folders = d.folders || {};
+  state.docs = d.docs || {};
+  state.selectedFolder = d.selectedFolder || null;
+  state.selectedDoc = d.selectedDoc || null;
+}
 
 // --- Utilities ---
-function $(sel) { return document.querySelector(sel); }
-function el(tag, cls = '', html = '') {
+function el(tag, attrs = {}, ...children) {
   const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (html) e.innerHTML = html;
+  for (const k in attrs) {
+    if (k.startsWith('on') && typeof attrs[k] === 'function') e[k] = attrs[k];
+    else if (attrs[k] !== false) e.setAttribute(k, attrs[k]);
+  }
+  for (const c of children) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
   return e;
 }
+function uuid() { return 'id-' + Math.random().toString(36).slice(2,10) + Date.now(); }
 
-// --- State ---
-let STATE = {
-  user: null, // { username }
-  folders: {}, // { folderId: { name, files: [fileId, ...], owner } }
-  files: {},   // { fileId: { folderId, name, content, owner } }
-};
-
-function saveState() {
-  localStorage.setItem('projectdocs', JSON.stringify({
-    folders: STATE.folders,
-    files: STATE.files
-  }));
-}
-function loadState() {
-  const d = JSON.parse(localStorage.getItem('projectdocs') || '{}');
-  STATE.folders = d.folders || {};
-  STATE.files = d.files || {};
-}
-
-// --- Main App Logic ---
-function showApp() {
-  const username = localStorage.getItem('currentUser');
-  if (!username) {
-    window.location.href = 'login.html';
-    return;
+// --- Render Functions ---
+function render() {
+  const root = document.getElementById('app-root');
+  root.innerHTML = '';
+  root.appendChild(el('div', {class: 'header-bar'},
+    el('h1', {}, 'ProjectDocs'),
+    el('button', {onclick: () => showFolders()}, 'Folders')
+  ));
+  if (state.selectedDoc) {
+    renderDocView(root, state.selectedDoc);
+  } else if (state.selectedFolder) {
+    renderFolderView(root, state.selectedFolder);
+  } else {
+    renderFoldersList(root);
   }
-  STATE.user = { username };
-  loadState();
-  renderHub();
 }
 
-function renderHub() {
-  const app = $('#app');
-  app.innerHTML = '';
-  const header = el('div', '', `
-    <h2>Welcome, ${STATE.user.username}</h2>
-    <button class="low-poly-btn" id="logout-btn">Logout</button>
-    <h3>Folders</h3>
-    <button class="low-poly-btn" id="add-folder-btn">+ New Folder</button>
-    <div id="folders-list"></div>
-  `);
-  app.appendChild(header);
-  $('#logout-btn').onclick = function() {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'login.html';
-  };
-  $('#add-folder-btn').onclick = addFolder;
-  renderFolders();
+function renderFoldersList(root) {
+  root.appendChild(el('h2', {}, 'Your Folders'));
+  const ul = el('ul', {class: 'folder-list'});
+  const folderEntries = Object.entries(state.folders);
+  if (folderEntries.length === 0) {
+    ul.appendChild(el('li', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No folders yet. Click "+ New Folder" to get started!'));
+  } else {
+    folderEntries.forEach(([fid, f]) => {
+      ul.appendChild(el('li', {class: 'folder-item fade-in'},
+        el('span', {style:'font-weight:500'}, f.name),
+        el('span', {},
+          el('button', {onclick:()=>openFolder(fid), 'aria-label':'Open folder'}, 'Open'),
+          el('button', {onclick:()=>renameFolder(fid), 'aria-label':'Rename folder'}, 'Rename'),
+          el('button', {onclick:()=>deleteFolder(fid), 'aria-label':'Delete folder'}, 'Delete')
+        )
+      ));
+    });
+  }
+  root.appendChild(ul);
+  root.appendChild(el('button', {onclick: addFolder, style:'margin-top:1em'}, '+ New Folder'));
 }
 
-function renderFolders() {
-  const list = $('#folders-list');
-  list.innerHTML = '';
-  Object.entries(STATE.folders).forEach(([fid, f]) => {
-    if (f.owner !== STATE.user.username) return;
-    const folderDiv = el('div', 'folder fade-in-up', `
-      <b>${f.name}</b>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Open</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Rename</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Delete</button>
-      <div class="pages-list"></div>
-    `);
-    const btns = folderDiv.querySelectorAll('button');
-    btns[0].onclick = () => openFolder(fid);
-    btns[1].onclick = () => renameFolder(fid);
-    btns[2].onclick = () => deleteFolder(fid);
-    list.appendChild(folderDiv);
-  });
+function renderFolderView(root, fid) {
+  const folder = state.folders[fid];
+  root.appendChild(el('div', {class:'fade-in'},
+    el('button', {onclick:()=>{state.selectedFolder=null;save();render();}}, '← Back to Folders'),
+    el('h2', {}, folder.name),
+    (() => {
+      if (folder.docs.length === 0) {
+        return el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No docs yet. Click "+ New Doc" to create your first document!');
+      }
+      return el('ul', {class:'doc-list'},
+        ...folder.docs.map(did => el('li', {class:'doc-item'},
+          el('span', {}, state.docs[did].name),
+          el('span', {},
+            el('button', {onclick:()=>openDoc(did), 'aria-label':'Open doc'}, 'Open'),
+            el('button', {onclick:()=>renameDoc(did), 'aria-label':'Rename doc'}, 'Rename'),
+            el('button', {onclick:()=>deleteDoc(did), 'aria-label':'Delete doc'}, 'Delete')
+          )
+        ))
+      );
+    })(),
+    el('button', {onclick:()=>addDoc(fid), style:'margin-top:1em'}, '+ New Doc')
+  ));
 }
+
+function renderDocView(root, did) {
+  const doc = state.docs[did];
+  // Feedback message node
+  let msgNode = el('div', {id:'doc-msg', style:'margin-bottom:1em;color:#2563eb;'});
+  root.appendChild(el('div', {class:'fade-in'},
+    el('button', {onclick:()=>{state.selectedDoc=null;save();render();}}, '← Back to Folder'),
+    el('h2', {}, doc.name),
+    msgNode,
+    el('textarea', {
+      value: doc.content,
+      oninput: e=>{doc.content=e.target.value;save();},
+      style:'width:100%;margin-bottom:1em;',
+      'aria-label':'Document content'
+    }),
+    el('button', {onclick:()=>saveDoc(did, msgNode)}, 'Save')
+  ));
+}
+
+
+// --- Folder & Doc Logic ---
 function addFolder() {
   const name = prompt('Folder name?');
   if (!name) return;
-  const id = 'f_' + Date.now();
-  STATE.folders[id] = { name, files: [], owner: STATE.user.username };
-  saveState();
-  renderFolders();
+  const id = uuid();
+  state.folders[id] = {name, docs:[]};
+  save();
+  render();
 }
 function renameFolder(fid) {
-  const name = prompt('New folder name?', STATE.folders[fid].name);
+  const name = prompt('New folder name?', state.folders[fid].name);
   if (!name) return;
-  STATE.folders[fid].name = name;
-  saveState();
-  renderFolders();
+  state.folders[fid].name = name;
+  save();
+  render();
 }
 function deleteFolder(fid) {
-  if (!confirm('Delete this folder and all its pages?')) return;
-  STATE.folders[fid].files.forEach(pid => delete STATE.files[pid]);
-  delete STATE.folders[fid];
-  saveState();
-  renderFolders();
+  if (!confirm('Delete this folder and all its docs?')) return;
+  state.folders[fid].docs.forEach(did=>delete state.docs[did]);
+  delete state.folders[fid];
+  save();
+  render();
 }
 function openFolder(fid) {
-  const app = $('#app');
-  app.innerHTML = '';
-  const f = STATE.folders[fid];
-  const header = el('div', '', `
-    <h2>${f.name}</h2>
-    <button class="low-poly-btn" id="back-btn">Back</button>
-    <button class="low-poly-btn" id="add-page-btn">+ New Page</button>
-    <div id="pages-list"></div>
-  `);
-  app.appendChild(header);
-  $('#back-btn').onclick = renderHub;
-  $('#add-page-btn').onclick = () => addPage(fid);
-  renderPages(fid);
+  state.selectedFolder = fid;
+  state.selectedDoc = null;
+  save();
+  render();
 }
-function renderPages(fid) {
-  const list = $('#pages-list');
-  list.innerHTML = '';
-  STATE.folders[fid].files.forEach(pid => {
-    const p = STATE.files[pid];
-    const div = el('div', 'page fade-in-up', `
-      <b>${p.name}</b>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Open</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Rename</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Delete</button>
-    `);
-    const btns = div.querySelectorAll('button');
-    btns[0].onclick = () => openPage(pid);
-    btns[1].onclick = () => renamePage(pid);
-    btns[2].onclick = () => deletePage(fid, pid);
-    list.appendChild(div);
-  });
-}
-function addPage(fid) {
-  const name = prompt('Page name?');
+function addDoc(fid) {
+  const name = prompt('Doc name?');
   if (!name) return;
-  const id = 'p_' + Date.now();
-  STATE.files[id] = { folderId: fid, name, content: '', owner: STATE.user.username };
-  STATE.folders[fid].files.push(id);
-  saveState();
-  renderPages(fid);
+  const id = uuid();
+  state.docs[id] = {folderId: fid, name, content: ''};
+  state.folders[fid].docs.push(id);
+  save();
+  render();
 }
-function renamePage(pid) {
-  const name = prompt('New page name?', STATE.files[pid].name);
+function renameDoc(did) {
+  const name = prompt('New doc name?', state.docs[did].name);
   if (!name) return;
-  STATE.files[pid].name = name;
-  saveState();
-  renderPages(STATE.files[pid].folderId);
+  state.docs[did].name = name;
+  save();
+  render();
 }
-function deletePage(fid, pid) {
-  if (!confirm('Delete this page?')) return;
-  delete STATE.files[pid];
-  STATE.folders[fid].files = STATE.folders[fid].files.filter(id => id !== pid);
-  saveState();
-  renderPages(fid);
+function deleteDoc(did) {
+  const doc = state.docs[did];
+  if (!confirm('Delete this doc?')) return;
+  state.folders[doc.folderId].docs = state.folders[doc.folderId].docs.filter(x=>x!==did);
+  delete state.docs[did];
+  save();
+  render();
 }
-function openPage(pid) {
-  const p = STATE.files[pid];
-  const editable = (STATE.user.username === p.owner);
-  const app = $('#app');
-  app.innerHTML = '';
-  const header = el('div', '', `
-    <button class="low-poly-btn" id="back-folder-btn">Back</button>
-    <span style="font-size:1.3em;margin-left:1em;">${p.name}</span>
-    <button class="low-poly-btn" id="save-btn" style="float:right;">Save</button>
-  `);
-  app.appendChild(header);
-  $('#back-folder-btn').onclick = () => openFolder(p.folderId);
-  const textarea = el('textarea', '', '');
-  textarea.style = 'width:100%;min-height:60vh;font-size:1.15em;padding:1em;background:rgba(245,247,255,0.7);border:none;resize:vertical;box-shadow:0 1px 8px #dbeafe;';
-  textarea.value = p.content;
-  textarea.readOnly = !editable;
-  textarea.placeholder = editable ? 'Start writing your doc...' : 'View only';
-  textarea.classList.add('fade-in-up');
-  app.appendChild(textarea);
-  $('#save-btn').onclick = () => {
-    if (!editable) return;
-    p.content = textarea.value;
-    saveState();
-    $('#save-btn').textContent = 'Saved!';
-    setTimeout(() => { $('#save-btn').textContent = 'Save'; }, 1200);
-  };
-  if (!editable) $('#save-btn').disabled = true;
+function openDoc(did) {
+  state.selectedDoc = did;
+  save();
+  render();
+}
+function saveDoc(did, msgNode) {
+  // Already saved on input, but show visual feedback
+  if (msgNode) {
+    msgNode.textContent = '✓ Document saved!';
+    setTimeout(() => { msgNode.textContent = ''; }, 1200);
+  }
+}
+
+function showFolders() {
+  state.selectedFolder = null;
+  state.selectedDoc = null;
+  save();
+  render();
 }
 
 // --- Init ---
-window.onload = showApp;
-
-// --- HUB (Folders & Files) ---
-function showHub() {
-  const username = localStorage.getItem('currentUser');
-  if (!username) {
-    window.location.href = 'login.html';
-    return;
-  }
-  STATE.user = { username };
-  const app = $('#app');
-  app.innerHTML = '';
-  const header = el('div', '', `
-    <h2>Welcome, ${username}</h2>
-    <button class="low-poly-btn" id="logout-btn">Logout</button>
-    <h3>Folders</h3>
-    <button class="low-poly-btn" id="add-folder-btn">+ New Folder</button>
-    <div id="folders-list"></div>
-  `);
-  app.appendChild(header);
-  $('#logout-btn').onclick = function() {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'login.html';
-  };
-  $('#add-folder-btn').onclick = addFolder;
-  renderFolders();
-}
-function renderFolders() {
-  const list = $('#folders-list');
-  list.innerHTML = '';
-  Object.entries(STATE.folders).forEach(([fid, f]) => {
-    if (f.owner !== STATE.user.username) return;
-    const folderDiv = el('div', 'folder fade-in-up', `
-      <b>${f.name}</b>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Open</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Rename</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Delete</button>
-      <div class="pages-list"></div>
-    `);
-    // Attach events
-    const btns = folderDiv.querySelectorAll('button');
-    btns[0].onclick = () => openFolder(fid);
-    btns[1].onclick = () => renameFolder(fid);
-    btns[2].onclick = () => deleteFolder(fid);
-    list.appendChild(folderDiv);
-  });
-}
-function addFolder() {
-  const name = prompt('Folder name?');
-  if (!name) return;
-  const id = 'f_' + Date.now();
-  STATE.folders[id] = { name, files: [], owner: STATE.user.username };
-  saveState();
-  renderFolders();
-}
-function renameFolder(fid) {
-  const name = prompt('New folder name?', STATE.folders[fid].name);
-  if (!name) return;
-  STATE.folders[fid].name = name;
-  saveState();
-  renderFolders();
-}
-function deleteFolder(fid) {
-  if (!confirm('Delete this folder and all its pages?')) return;
-  STATE.folders[fid].files.forEach(pid => delete STATE.files[pid]);
-  delete STATE.folders[fid];
-  saveState();
-  renderFolders();
-}
-function openFolder(fid) {
-  const app = $('#app');
-  app.innerHTML = '';
-  const f = STATE.folders[fid];
-  const header = el('div', '', `
-    <h2>${f.name}</h2>
-    <button class="low-poly-btn" id="back-btn">Back</button>
-    <button class="low-poly-btn" id="add-page-btn">+ New Page</button>
-    <div id="pages-list"></div>
-  `);
-  app.appendChild(header);
-  $('#back-btn').onclick = showHub;
-  $('#add-page-btn').onclick = () => addPage(fid);
-  renderPages(fid);
-}
-function renderPages(fid) {
-  const list = $('#pages-list');
-  list.innerHTML = '';
-  STATE.folders[fid].files.forEach(pid => {
-    const p = STATE.files[pid];
-    const div = el('div', 'page fade-in-up', `
-      <b>${p.name}</b>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Open</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Rename</button>
-      <button class="low-poly-btn" style="float:right;font-size:0.9em;" onclick="">Delete</button>
-    `);
-    const btns = div.querySelectorAll('button');
-    btns[0].onclick = () => openPage(pid);
-    btns[1].onclick = () => renamePage(pid);
-    btns[2].onclick = () => deletePage(fid, pid);
-    list.appendChild(div);
-  });
-}
-function addPage(fid) {
-  const name = prompt('Page name?');
-  if (!name) return;
-  const id = 'p_' + Date.now();
-  STATE.files[id] = { folderId: fid, name, content: '', owner: STATE.user.username };
-  STATE.folders[fid].files.push(id);
-  saveState();
-  renderPages(fid);
-}
-function renamePage(pid) {
-  const name = prompt('New page name?', STATE.files[pid].name);
-  if (!name) return;
-  STATE.files[pid].name = name;
-  saveState();
-  renderPages(STATE.files[pid].folderId);
-}
-function deletePage(fid, pid) {
-  if (!confirm('Delete this page?')) return;
-  delete STATE.files[pid];
-  STATE.folders[fid].files = STATE.folders[fid].files.filter(id => id !== pid);
-  saveState();
-  renderPages(fid);
-}
-
-// --- PAGE EDITOR ---
-function openPage(pid) {
-  const p = STATE.files[pid];
-  const editable = (STATE.user.username === p.owner);
-  const app = $('#app');
-  app.innerHTML = '';
-  const header = el('div', '', `
-    <button class="low-poly-btn" id="back-folder-btn">Back</button>
-    <span style="font-size:1.3em;margin-left:1em;">${p.name}</span>
-    <button class="low-poly-btn" id="save-btn" style="float:right;">Save</button>
-  `);
-  app.appendChild(header);
-  $('#back-folder-btn').onclick = () => openFolder(p.folderId);
-  const textarea = el('textarea', '', '');
-  textarea.style = 'width:100%;min-height:60vh;font-size:1.15em;padding:1em;background:rgba(245,247,255,0.7);border:none;resize:vertical;box-shadow:0 1px 8px #dbeafe;';
-  textarea.value = p.content;
-  textarea.readOnly = !editable;
-  textarea.placeholder = editable ? 'Start writing your doc...' : 'View only';
-  textarea.classList.add('fade-in-up');
-  app.appendChild(textarea);
-  $('#save-btn').onclick = () => {
-    if (!editable) return;
-    p.content = textarea.value;
-    saveState();
-    $('#save-btn').textContent = 'Saved!';
-    setTimeout(() => { $('#save-btn').textContent = 'Save'; }, 1200);
-  };
-  if (!editable) $('#save-btn').disabled = true;
-}
-
-// --- INIT ---
-showHub();
+window.onload = function() {
+  load();
+  render();
+};
