@@ -58,12 +58,17 @@ function renderSidebar() {
   }
   folders.sort((a,b)=>a[1].name.localeCompare(b[1].name));
   for (const [fid, f] of folders) {
-    sidebar.appendChild(el('div', {class:'folder-item fade-in', tabindex:0, onclick:()=>selectFolder(fid)},
+    sidebar.appendChild(el('div', {
+      class:'folder-item fade-in'+(state.selectedFolder===fid?' selected':''),
+      tabindex:0,
+      onclick:()=>selectFolder(fid)
+    },
       el('span', {}, f.name),
       el('button', {class:'fav-btn'+(f.fav?' fav':''), title:'Favorite', onclick:(e)=>{e.stopPropagation();toggleFavFolder(fid);}}, '★')
     ));
   }
 }
+
 function renderTopbar() {
   document.getElementById('search-box').value = state.search;
   document.getElementById('toggle-fav').className = state.showFav ? 'fav' : '';
@@ -80,37 +85,60 @@ function renderMainPane() {
   let docs = state.folders[state.selectedFolder]?.docs.map(id=>[id, state.docs[id]]).filter(x=>!!x[1]) || [];
   if (state.showFav) docs = docs.filter(([id, d])=>d.fav);
   if (state.search) docs = docs.filter(([id, d])=>d.name.toLowerCase().includes(state.search.toLowerCase()));
+  const docsHeader = el('div', {style:'display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5em;'},
+    el('h2', {style:'margin:0;font-size:1.2em;'}, 'Docs'),
+    el('button', {onclick:addDoc, style:'margin-left:1em;font-size:1em;'}, '+ New Doc')
+  );
+  docsList.appendChild(docsHeader);
   if (docs.length === 0) {
     docsList.appendChild(el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No docs found.'));
     return;
   }
   docs.sort((a,b)=>a[1].name.localeCompare(b[1].name));
   for (const [did, d] of docs) {
-    docsList.appendChild(el('div', {class:'doc-item fade-in', tabindex:0, onclick:()=>selectDoc(did)},
+    docsList.appendChild(el('div', {
+      class:'doc-item fade-in'+(state.selectedDoc===did?' selected':''),
+      tabindex:0,
+      onclick:()=>selectDoc(did)
+    },
       el('span', {}, d.name),
       el('button', {class:'fav-btn'+(d.fav?' fav':''), title:'Favorite', onclick:(e)=>{e.stopPropagation();toggleFavDoc(did);}}, '★')
     ));
   }
   if (state.selectedDoc) renderDocView(docView, state.selectedDoc);
 }
+
 function renderDocView(root, did) {
   const doc = state.docs[did];
   let msgNode = el('div', {id:'doc-msg', style:'margin-bottom:1em;color:#2563eb;'});
+  const quillDiv = el('div', {id:'quill-editor', style:'background:#fff;'});
   root.appendChild(el('div', {class:'fade-in'},
     el('button', {onclick:()=>{state.selectedDoc=null;save();renderMainPane();}}, '← Back to Docs'),
     el('h2', {}, doc.name),
     msgNode,
-    el('textarea', {
-      value: doc.content,
-      oninput: e=>{doc.content=e.target.value;save();},
-      style:'width:100%;margin-bottom:1em;',
-      'aria-label':'Document content'
-    }),
-    el('button', {onclick:()=>saveDoc(did, msgNode)}, 'Save'),
+    quillDiv,
+    el('button', {id:'save-doc-btn'}, 'Save'),
     el('button', {onclick:()=>renameDoc(did)}, 'Rename'),
     el('button', {onclick:()=>deleteDoc(did)}, 'Delete')
   ));
+  // Initialize Quill
+  const quill = new Quill('#quill-editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['clean']
+      ]
+    }
+  });
+  quill.root.innerHTML = doc.content || '';
+  document.getElementById('save-doc-btn').onclick = function() {
+    doc.content = quill.root.innerHTML;
+    saveDoc(did, msgNode);
+  };
 }
+
 
 // --- Handlers & Logic ---
 function setupHandlers() {
