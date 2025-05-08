@@ -105,8 +105,16 @@ function signup() {
   }
   users[u] = { pw: hash(p) };
   saveUsers(users);
-  $('#signup-msg').textContent = 'Account created! You can now login.';
-  setTimeout(showLogin, 1200);
+  // Show success message and button to go to login
+  const app = $('#app');
+  app.innerHTML = '';
+  const wrap = el('div', 'fade-in-up', `
+    <h2>Sign Up</h2>
+    <div style="color:#22b573;font-size:1.1em;margin-bottom:1em;">Account created! You can now login.</div>
+    <button class="low-poly-btn" id="goto-login">Go to Login</button>
+  `);
+  app.appendChild(wrap);
+  $('#goto-login').onclick = showLogin;
 }
 function login() {
   const u = $('#login-username').value.trim();
