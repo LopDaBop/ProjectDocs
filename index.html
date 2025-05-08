@@ -8,7 +8,25 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app-root"></div>
+  <div id="topbar">
+    <span id="logo">📁 ProjectDocs</span>
+    <input id="search-box" type="search" placeholder="Search folders & docs..." />
+    <button id="toggle-fav" title="Show favorites">★</button>
+    <button id="export-btn" title="Export data">Export</button>
+    <button id="import-btn" title="Import data">Import</button>
+    <button id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+  <div id="main-layout">
+    <nav id="sidebar">
+      <div id="folders-list"></div>
+      <button id="add-folder-btn">+ New Folder</button>
+    </nav>
+    <main id="main-pane">
+      <div id="docs-list"></div>
+      <div id="doc-view"></div>
+    </main>
+  </div>
+  <input type="file" id="import-file" style="display:none;" />
   <script src="app.js"></script>
 </body>
 </html>

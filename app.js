@@ -1,12 +1,15 @@
-// ProjectDocs – Modern Docs & Folders App
+// ProjectDocs – Feature-rich Docs & Folders App
 
 // --- State & Persistence ---
-const STORAGE_KEY = 'projectdocs_v2';
+const STORAGE_KEY = 'projectdocs_v3';
 let state = {
-  folders: {}, // {id: {name, docs: [docId]}}
-  docs: {},    // {id: {folderId, name, content}}
+  folders: {}, // {id: {name, docs: [docId], fav: bool, created, updated}}
+  docs: {},    // {id: {folderId, name, content, fav: bool, created, updated}}
   selectedFolder: null,
-  selectedDoc: null
+  selectedDoc: null,
+  showFav: false,
+  search: '',
+  theme: 'light'
 };
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function load() {
@@ -15,6 +18,9 @@ function load() {
   state.docs = d.docs || {};
   state.selectedFolder = d.selectedFolder || null;
   state.selectedDoc = d.selectedDoc || null;
+  state.showFav = d.showFav || false;
+  state.search = d.search || '';
+  state.theme = d.theme || 'light';
 }
 
 // --- Utilities ---
@@ -28,76 +34,70 @@ function el(tag, attrs = {}, ...children) {
   return e;
 }
 function uuid() { return 'id-' + Math.random().toString(36).slice(2,10) + Date.now(); }
+function now() { return new Date().toISOString(); }
 
 // --- Render Functions ---
-function render() {
-  const root = document.getElementById('app-root');
-  root.innerHTML = '';
-  root.appendChild(el('div', {class: 'header-bar'},
-    el('h1', {}, 'ProjectDocs'),
-    el('button', {onclick: () => showFolders()}, 'Folders')
-  ));
-  if (state.selectedDoc) {
-    renderDocView(root, state.selectedDoc);
-  } else if (state.selectedFolder) {
-    renderFolderView(root, state.selectedFolder);
-  } else {
-    renderFoldersList(root);
+window.onload = function() {
+  load();
+  applyTheme();
+  renderSidebar();
+  renderTopbar();
+  renderMainPane();
+  setupHandlers();
+};
+
+function renderSidebar() {
+  const sidebar = document.getElementById('folders-list');
+  sidebar.innerHTML = '';
+  let folders = Object.entries(state.folders);
+  if (state.showFav) folders = folders.filter(([id, f]) => f.fav);
+  if (state.search) folders = folders.filter(([id, f]) => f.name.toLowerCase().includes(state.search.toLowerCase()));
+  if (folders.length === 0) {
+    sidebar.appendChild(el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No folders found.'));
+    return;
+  }
+  folders.sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  for (const [fid, f] of folders) {
+    sidebar.appendChild(el('div', {class:'folder-item fade-in', tabindex:0, onclick:()=>selectFolder(fid)},
+      el('span', {}, f.name),
+      el('button', {class:'fav-btn'+(f.fav?' fav':''), title:'Favorite', onclick:(e)=>{e.stopPropagation();toggleFavFolder(fid);}}, '★')
+    ));
   }
 }
-
-function renderFoldersList(root) {
-  root.appendChild(el('h2', {}, 'Your Folders'));
-  const ul = el('ul', {class: 'folder-list'});
-  const folderEntries = Object.entries(state.folders);
-  if (folderEntries.length === 0) {
-    ul.appendChild(el('li', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No folders yet. Click "+ New Folder" to get started!'));
-  } else {
-    folderEntries.forEach(([fid, f]) => {
-      ul.appendChild(el('li', {class: 'folder-item fade-in'},
-        el('span', {style:'font-weight:500'}, f.name),
-        el('span', {},
-          el('button', {onclick:()=>openFolder(fid), 'aria-label':'Open folder'}, 'Open'),
-          el('button', {onclick:()=>renameFolder(fid), 'aria-label':'Rename folder'}, 'Rename'),
-          el('button', {onclick:()=>deleteFolder(fid), 'aria-label':'Delete folder'}, 'Delete')
-        )
-      ));
-    });
+function renderTopbar() {
+  document.getElementById('search-box').value = state.search;
+  document.getElementById('toggle-fav').className = state.showFav ? 'fav' : '';
+}
+function renderMainPane() {
+  const docsList = document.getElementById('docs-list');
+  const docView = document.getElementById('doc-view');
+  docsList.innerHTML = '';
+  docView.innerHTML = '';
+  if (!state.selectedFolder) {
+    docsList.appendChild(el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'Select a folder to view its docs.'));
+    return;
   }
-  root.appendChild(ul);
-  root.appendChild(el('button', {onclick: addFolder, style:'margin-top:1em'}, '+ New Folder'));
+  let docs = state.folders[state.selectedFolder]?.docs.map(id=>[id, state.docs[id]]).filter(x=>!!x[1]) || [];
+  if (state.showFav) docs = docs.filter(([id, d])=>d.fav);
+  if (state.search) docs = docs.filter(([id, d])=>d.name.toLowerCase().includes(state.search.toLowerCase()));
+  if (docs.length === 0) {
+    docsList.appendChild(el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No docs found.'));
+    return;
+  }
+  docs.sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  for (const [did, d] of docs) {
+    docsList.appendChild(el('div', {class:'doc-item fade-in', tabindex:0, onclick:()=>selectDoc(did)},
+      el('span', {}, d.name),
+      el('button', {class:'fav-btn'+(d.fav?' fav':''), title:'Favorite', onclick:(e)=>{e.stopPropagation();toggleFavDoc(did);}}, '★')
+    ));
+  }
+  if (state.selectedDoc) renderDocView(docView, state.selectedDoc);
 }
-
-function renderFolderView(root, fid) {
-  const folder = state.folders[fid];
-  root.appendChild(el('div', {class:'fade-in'},
-    el('button', {onclick:()=>{state.selectedFolder=null;save();render();}}, '← Back to Folders'),
-    el('h2', {}, folder.name),
-    (() => {
-      if (folder.docs.length === 0) {
-        return el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No docs yet. Click "+ New Doc" to create your first document!');
-      }
-      return el('ul', {class:'doc-list'},
-        ...folder.docs.map(did => el('li', {class:'doc-item'},
-          el('span', {}, state.docs[did].name),
-          el('span', {},
-            el('button', {onclick:()=>openDoc(did), 'aria-label':'Open doc'}, 'Open'),
-            el('button', {onclick:()=>renameDoc(did), 'aria-label':'Rename doc'}, 'Rename'),
-            el('button', {onclick:()=>deleteDoc(did), 'aria-label':'Delete doc'}, 'Delete')
-          )
-        ))
-      );
-    })(),
-    el('button', {onclick:()=>addDoc(fid), style:'margin-top:1em'}, '+ New Doc')
-  ));
-}
-
 function renderDocView(root, did) {
   const doc = state.docs[did];
-  // Feedback message node
   let msgNode = el('div', {id:'doc-msg', style:'margin-bottom:1em;color:#2563eb;'});
   root.appendChild(el('div', {class:'fade-in'},
-    el('button', {onclick:()=>{state.selectedDoc=null;save();render();}}, '← Back to Folder'),
+    el('button', {onclick:()=>{state.selectedDoc=null;save();renderMainPane();}}, '← Back to Docs'),
     el('h2', {}, doc.name),
     msgNode,
     el('textarea', {
@@ -106,55 +106,77 @@ function renderDocView(root, did) {
       style:'width:100%;margin-bottom:1em;',
       'aria-label':'Document content'
     }),
-    el('button', {onclick:()=>saveDoc(did, msgNode)}, 'Save')
+    el('button', {onclick:()=>saveDoc(did, msgNode)}, 'Save'),
+    el('button', {onclick:()=>renameDoc(did)}, 'Rename'),
+    el('button', {onclick:()=>deleteDoc(did)}, 'Delete')
   ));
 }
 
-
-// --- Folder & Doc Logic ---
+// --- Handlers & Logic ---
+function setupHandlers() {
+  document.getElementById('add-folder-btn').onclick = addFolder;
+  document.getElementById('toggle-fav').onclick = ()=>{state.showFav=!state.showFav;save();renderSidebar();renderTopbar();renderMainPane();};
+  document.getElementById('theme-btn').onclick = ()=>{toggleTheme();};
+  document.getElementById('search-box').oninput = e=>{state.search=e.target.value;save();renderSidebar();renderMainPane();};
+  document.getElementById('export-btn').onclick = exportData;
+  document.getElementById('import-btn').onclick = ()=>document.getElementById('import-file').click();
+  document.getElementById('import-file').onchange = importData;
+}
 function addFolder() {
   const name = prompt('Folder name?');
   if (!name) return;
   const id = uuid();
-  state.folders[id] = {name, docs:[]};
+  state.folders[id] = {name, docs:[], fav:false, created:now(), updated:now()};
   save();
-  render();
+  renderSidebar();
 }
-function renameFolder(fid) {
-  const name = prompt('New folder name?', state.folders[fid].name);
-  if (!name) return;
-  state.folders[fid].name = name;
-  save();
-  render();
-}
-function deleteFolder(fid) {
-  if (!confirm('Delete this folder and all its docs?')) return;
-  state.folders[fid].docs.forEach(did=>delete state.docs[did]);
-  delete state.folders[fid];
-  save();
-  render();
-}
-function openFolder(fid) {
+function selectFolder(fid) {
   state.selectedFolder = fid;
   state.selectedDoc = null;
   save();
-  render();
+  renderSidebar();
+  renderMainPane();
 }
-function addDoc(fid) {
+function toggleFavFolder(fid) {
+  state.folders[fid].fav = !state.folders[fid].fav;
+  save();
+  renderSidebar();
+}
+function addDoc() {
+  if (!state.selectedFolder) return;
   const name = prompt('Doc name?');
   if (!name) return;
   const id = uuid();
-  state.docs[id] = {folderId: fid, name, content: ''};
-  state.folders[fid].docs.push(id);
+  state.docs[id] = {folderId: state.selectedFolder, name, content: '', fav:false, created:now(), updated:now()};
+  state.folders[state.selectedFolder].docs.push(id);
   save();
-  render();
+  renderMainPane();
+}
+function selectDoc(did) {
+  state.selectedDoc = did;
+  save();
+  renderMainPane();
+}
+function toggleFavDoc(did) {
+  state.docs[did].fav = !state.docs[did].fav;
+  save();
+  renderMainPane();
+}
+function saveDoc(did, msgNode) {
+  if (msgNode) {
+    msgNode.textContent = '✓ Document saved!';
+    setTimeout(() => { msgNode.textContent = ''; }, 1200);
+  }
+  state.docs[did].updated = now();
+  save();
 }
 function renameDoc(did) {
   const name = prompt('New doc name?', state.docs[did].name);
   if (!name) return;
   state.docs[did].name = name;
+  state.docs[did].updated = now();
   save();
-  render();
+  renderMainPane();
 }
 function deleteDoc(did) {
   const doc = state.docs[did];
@@ -162,30 +184,39 @@ function deleteDoc(did) {
   state.folders[doc.folderId].docs = state.folders[doc.folderId].docs.filter(x=>x!==did);
   delete state.docs[did];
   save();
-  render();
+  renderMainPane();
 }
-function openDoc(did) {
-  state.selectedDoc = did;
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'projectdocs-backup.json';
+  a.click();
+}
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = JSON.parse(evt.target.result);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      window.location.reload();
+    } catch {
+      alert('Import failed: Invalid file.');
+    }
+  };
+  reader.readAsText(file);
+}
+function applyTheme() {
+  document.body.style.background = state.theme==='dark'
+    ? 'linear-gradient(120deg,#222 0%,#2d3748 100%)'
+    : 'linear-gradient(120deg,#f8fafc 0%,#e0e7ef 100%)';
+  document.body.style.color = state.theme==='dark' ? '#f1f5fb' : '#222';
+}
+function toggleTheme() {
+  state.theme = state.theme==='dark' ? 'light' : 'dark';
   save();
-  render();
+  applyTheme();
 }
-function saveDoc(did, msgNode) {
-  // Already saved on input, but show visual feedback
-  if (msgNode) {
-    msgNode.textContent = '✓ Document saved!';
-    setTimeout(() => { msgNode.textContent = ''; }, 1200);
-  }
-}
-
-function showFolders() {
-  state.selectedFolder = null;
-  state.selectedDoc = null;
-  save();
-  render();
-}
-
-// --- Init ---
-window.onload = function() {
-  load();
-  render();
-};
