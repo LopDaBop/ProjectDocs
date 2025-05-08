@@ -37,22 +37,76 @@ function loadUsers() {
 }
 
 // --- AUTH ---
+function showLanding() {
+  const app = $('#app');
+  app.innerHTML = '';
+  const wrap = el('div', 'fade-in-up', `
+    <h1 style="margin-bottom:1.5em;">ProjectDocs</h1>
+    <button class="low-poly-btn" id="goto-login">Login</button>
+    <button class="low-poly-btn" id="goto-signup">Sign Up</button>
+  `);
+  app.appendChild(wrap);
+  $('#goto-login').onclick = showLogin;
+  $('#goto-signup').onclick = showSignup;
+}
 function showLogin() {
   const app = $('#app');
   app.innerHTML = '';
   const wrap = el('div', 'fade-in-up', `
-    <h1>ProjectDocs</h1>
-    <div style="margin:1em 0;">
-      <input type="text" id="login-username" placeholder="Username" style="margin-bottom:0.5em;display:block;" />
-      <input type="password" id="login-password" placeholder="Password" style="margin-bottom:0.5em;display:block;" />
-      <button class="low-poly-btn" id="login-btn">Login</button>
-      <button class="low-poly-btn" id="signup-btn">Sign Up</button>
-    </div>
-    <div id="login-msg" style="color:#6366f1;font-size:0.95em;"></div>
+    <h2>Login</h2>
+    <input type="text" id="login-username" placeholder="Username" style="margin-bottom:0.5em;display:block;width:100%;max-width:320px;" />
+    <input type="password" id="login-password" placeholder="Password" style="margin-bottom:0.5em;display:block;width:100%;max-width:320px;" />
+    <button class="low-poly-btn" id="login-btn">Login</button>
+    <button class="low-poly-btn" id="back-landing">Back</button>
+    <div id="login-msg" style="color:#6366f1;font-size:0.95em;margin-top:0.7em;"></div>
   `);
   app.appendChild(wrap);
   $('#login-btn').onclick = login;
+  $('#back-landing').onclick = showLanding;
+}
+function showSignup() {
+  const app = $('#app');
+  app.innerHTML = '';
+  const wrap = el('div', 'fade-in-up', `
+    <h2>Sign Up</h2>
+    <input type="text" id="signup-username" placeholder="Username" style="margin-bottom:0.5em;display:block;width:100%;max-width:320px;" />
+    <input type="password" id="signup-password" placeholder="Password" style="margin-bottom:0.5em;display:block;width:100%;max-width:320px;" />
+    <button class="low-poly-btn" id="signup-btn">Create Account</button>
+    <button class="low-poly-btn" id="back-landing">Back</button>
+    <div id="signup-msg" style="color:#6366f1;font-size:0.95em;margin-top:0.7em;"></div>
+  `);
+  app.appendChild(wrap);
   $('#signup-btn').onclick = signup;
+  $('#back-landing').onclick = showLanding;
+}
+function login() {
+  const u = $('#login-username').value.trim();
+  const p = $('#login-password').value;
+  const users = loadUsers();
+  if (users[u] && users[u].pw === hash(p)) {
+    STATE.user = { username: u };
+    loadState();
+    showHub();
+  } else {
+    $('#login-msg').textContent = 'Invalid username or password.';
+  }
+}
+function signup() {
+  const u = $('#signup-username').value.trim();
+  const p = $('#signup-password').value;
+  if (!u || !p) {
+    $('#signup-msg').textContent = 'Please enter username and password.';
+    return;
+  }
+  const users = loadUsers();
+  if (users[u]) {
+    $('#signup-msg').textContent = 'Username already exists.';
+    return;
+  }
+  users[u] = { pw: hash(p) };
+  saveUsers(users);
+  $('#signup-msg').textContent = 'Account created! You can now login.';
+  setTimeout(showLogin, 1200);
 }
 function login() {
   const u = $('#login-username').value.trim();
@@ -234,5 +288,5 @@ function openPage(pid) {
 
 // --- INIT ---
 window.onload = () => {
-  if (!STATE.user) showLogin();
+  if (!STATE.user) showLanding();
 };
