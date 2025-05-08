@@ -78,6 +78,24 @@ function renderMainPane() {
   const docView = document.getElementById('doc-view');
   docsList.innerHTML = '';
   docView.innerHTML = '';
+  // If a doc is open, show full-page doc view (hide sidebar/topbar)
+  if (state.selectedDoc) {
+    document.getElementById('folders-list').style.display = 'none';
+    document.getElementById('topbar').style.display = 'none';
+    docView.style.gridColumn = '1 / span 2';
+    docView.style.width = '100vw';
+    docView.style.minHeight = '100vh';
+    docView.style.background = '#f8fafc';
+    renderDocFullPage(docView, state.selectedDoc);
+    return;
+  } else {
+    document.getElementById('folders-list').style.display = '';
+    document.getElementById('topbar').style.display = '';
+    docView.style.gridColumn = '';
+    docView.style.width = '';
+    docView.style.minHeight = '';
+    docView.style.background = '';
+  }
   if (!state.selectedFolder) {
     docsList.appendChild(el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'Select a folder to view its docs.'));
     return;
@@ -105,38 +123,68 @@ function renderMainPane() {
       el('button', {class:'fav-btn'+(d.fav?' fav':''), title:'Favorite', onclick:(e)=>{e.stopPropagation();toggleFavDoc(did);}}, '★')
     ));
   }
-  if (state.selectedDoc) renderDocView(docView, state.selectedDoc);
 }
 
-function renderDocView(root, did) {
+
+// Session doc mode (edit/read) per session
+let docMode = 'read';
+function renderDocFullPage(root, did) {
   const doc = state.docs[did];
-  let msgNode = el('div', {id:'doc-msg', style:'margin-bottom:1em;color:#2563eb;'});
-  const quillDiv = el('div', {id:'quill-editor', style:'background:#fff;'});
-  root.appendChild(el('div', {class:'fade-in'},
-    el('button', {onclick:()=>{state.selectedDoc=null;save();renderMainPane();}}, '← Back to Docs'),
-    el('h2', {}, doc.name),
-    msgNode,
-    quillDiv,
-    el('button', {id:'save-doc-btn'}, 'Save'),
-    el('button', {onclick:()=>renameDoc(did)}, 'Rename'),
-    el('button', {onclick:()=>deleteDoc(did)}, 'Delete')
-  ));
-  // Initialize Quill
-  const quill = new Quill('#quill-editor', {
-    theme: 'snow',
-    modules: {
-      toolbar: [
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        ['clean']
-      ]
+  root.innerHTML = '';
+  // Floating back button
+  const backBtn = el('button', {
+    style:'position:fixed;top:2em;left:2em;z-index:1000;padding:0.7em 1.2em;font-size:1.1em;border-radius:2em;background:#2563eb;color:#fff;border:none;box-shadow:0 2px 8px #0002;cursor:pointer;',
+    onclick:()=>{
+      state.selectedDoc=null; save(); renderMainPane();
     }
-  });
-  quill.root.innerHTML = doc.content || '';
-  document.getElementById('save-doc-btn').onclick = function() {
-    doc.content = quill.root.innerHTML;
-    saveDoc(did, msgNode);
-  };
+  }, '← Back');
+  root.appendChild(backBtn);
+  // Mode toggle
+  const modeToggle = el('div', {style:'margin:2em auto 1em auto;max-width:700px;text-align:right;'},
+    el('span', {style:'margin-right:1em;font-size:1.2em;font-weight:600;'}, doc.name),
+    el('button', {
+      style:'margin-right:0.5em;',
+      disabled: docMode==='read',
+      onclick:()=>{docMode='read';renderDocFullPage(root, did);}
+    }, 'Read'),
+    el('button', {
+      disabled: docMode==='edit',
+      onclick:()=>{docMode='edit';renderDocFullPage(root, did);}
+    }, 'Edit'),
+    el('button', {onclick:()=>renameDoc(did), style:'margin-left:1.5em;'}, 'Rename'),
+    el('button', {onclick:()=>deleteDoc(did), style:'margin-left:0.5em;'}, 'Delete')
+  );
+  root.appendChild(modeToggle);
+  // Content area
+  const contentWrap = el('div', {style:'margin:0 auto;max-width:700px;background:#fff;border-radius:8px;box-shadow:0 2px 12px #0001;padding:2em;min-height:60vh;'},
+  );
+  root.appendChild(contentWrap);
+  if (docMode==='edit') {
+    // Show Quill
+    const quillDiv = el('div', {id:'quill-editor', style:'background:#fff;'});
+    contentWrap.appendChild(quillDiv);
+    const saveBtn = el('button', {id:'save-doc-btn', style:'margin-top:1em;'}, 'Save');
+    contentWrap.appendChild(saveBtn);
+    // Quill init
+    const quill = new Quill('#quill-editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['clean']
+        ]
+      }
+    });
+    quill.root.innerHTML = doc.content || '';
+    saveBtn.onclick = function() {
+      doc.content = quill.root.innerHTML;
+      saveDoc(did, null);
+    };
+  } else {
+    // Read mode: render HTML
+    contentWrap.innerHTML = `<div style="font-size:1.12em;line-height:1.7;color:#222;">${doc.content||'<span style=\'color:#aaa\'>Empty document.</span>'}</div>`;
+  }
 }
 
 
