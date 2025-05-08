@@ -1,9 +1,88 @@
 body {
   margin: 0;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
+  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+  background: #ececec;
   color: #222;
   min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+body.dark {
+  background: #22272b;
+  color: #f1f5fb;
+}
+
+/* Google Docs-like page */
+.docs-fullpage-bg {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: inherit;
+}
+.docs-toolbar {
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 2em 0 1em 0;
+  z-index: 10;
+}
+.docs-toolbar > * {
+  margin-right: 1em;
+}
+.docs-toolbar .doc-title {
+  font-size: 1.3em;
+  font-weight: 500;
+  margin-right: 2em;
+}
+.docs-page {
+  background: #fff;
+  width: 794px; /* A4 width at 96dpi */
+  min-height: 1123px; /* A4 height at 96dpi */
+  margin: 0 auto 2.5em auto;
+  box-shadow: 0 4px 32px #0002, 0 1.5px 6px #0001;
+  border-radius: 8px;
+  padding: 2.5em 3em;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s, color 0.3s;
+}
+body.dark .docs-page {
+  background: #23272e;
+  color: #f1f5fb;
+  box-shadow: 0 4px 32px #0008, 0 1.5px 6px #0004;
+}
+/* Quill editor in docs-page */
+.docs-page .ql-toolbar {
+  border-radius: 6px 6px 0 0;
+}
+.docs-page .ql-container {
+  background: transparent;
+  border-radius: 0 0 6px 6px;
+  min-height: 700px;
+  font-size: 1.12em;
+  line-height: 1.7;
+}
+body.dark .ql-toolbar {
+  background: #1a1c20;
+  border-color: #333;
+}
+body.dark .ql-container {
+  background: #23272e;
+  color: #f1f5fb;
+  border-color: #333;
+}
+/* Read mode content */
+.docs-page .doc-read-content {
+  font-size: 1.12em;
+  line-height: 1.7;
+  color: #222;
+}
+body.dark .docs-page .doc-read-content {
+  color: #f1f5fb;
 }
 
 #topbar {

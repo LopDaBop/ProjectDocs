@@ -131,17 +131,12 @@ let docMode = 'read';
 function renderDocFullPage(root, did) {
   const doc = state.docs[did];
   root.innerHTML = '';
-  // Floating back button
-  const backBtn = el('button', {
-    style:'position:fixed;top:2em;left:2em;z-index:1000;padding:0.7em 1.2em;font-size:1.1em;border-radius:2em;background:#2563eb;color:#fff;border:none;box-shadow:0 2px 8px #0002;cursor:pointer;',
-    onclick:()=>{
-      state.selectedDoc=null; save(); renderMainPane();
-    }
-  }, '← Back');
-  root.appendChild(backBtn);
-  // Mode toggle
-  const modeToggle = el('div', {style:'margin:2em auto 1em auto;max-width:700px;text-align:right;'},
-    el('span', {style:'margin-right:1em;font-size:1.2em;font-weight:600;'}, doc.name),
+  // Fullpage background
+  const bg = el('div', {class:'docs-fullpage-bg'});
+  root.appendChild(bg);
+  // Toolbar above page
+  const toolbar = el('div', {class:'docs-toolbar'},
+    el('span', {class:'doc-title'}, doc.name),
     el('button', {
       style:'margin-right:0.5em;',
       disabled: docMode==='read',
@@ -152,19 +147,22 @@ function renderDocFullPage(root, did) {
       onclick:()=>{docMode='edit';renderDocFullPage(root, did);}
     }, 'Edit'),
     el('button', {onclick:()=>renameDoc(did), style:'margin-left:1.5em;'}, 'Rename'),
-    el('button', {onclick:()=>deleteDoc(did), style:'margin-left:0.5em;'}, 'Delete')
+    el('button', {onclick:()=>deleteDoc(did), style:'margin-left:0.5em;'}, 'Delete'),
+    el('button', {
+      style:'margin-left:2em;background:#2563eb;color:#fff;border-radius:2em;padding:0.5em 1.2em;box-shadow:0 2px 8px #0001;',
+      onclick:()=>{state.selectedDoc=null; save(); renderMainPane();}
+    }, '← Back')
   );
-  root.appendChild(modeToggle);
-  // Content area
-  const contentWrap = el('div', {style:'margin:0 auto;max-width:700px;background:#fff;border-radius:8px;box-shadow:0 2px 12px #0001;padding:2em;min-height:60vh;'},
-  );
-  root.appendChild(contentWrap);
+  bg.appendChild(toolbar);
+  // Page
+  const page = el('div', {class:'docs-page'});
+  bg.appendChild(page);
   if (docMode==='edit') {
-    // Show Quill
-    const quillDiv = el('div', {id:'quill-editor', style:'background:#fff;'});
-    contentWrap.appendChild(quillDiv);
-    const saveBtn = el('button', {id:'save-doc-btn', style:'margin-top:1em;'}, 'Save');
-    contentWrap.appendChild(saveBtn);
+    // Quill editor
+    const quillDiv = el('div', {id:'quill-editor'});
+    page.appendChild(quillDiv);
+    const saveBtn = el('button', {id:'save-doc-btn', style:'margin-top:1em;width:120px;align-self:flex-end;'}, 'Save');
+    page.appendChild(saveBtn);
     // Quill init
     const quill = new Quill('#quill-editor', {
       theme: 'snow',
@@ -182,10 +180,11 @@ function renderDocFullPage(root, did) {
       saveDoc(did, null);
     };
   } else {
-    // Read mode: render HTML
-    contentWrap.innerHTML = `<div style="font-size:1.12em;line-height:1.7;color:#222;">${doc.content||'<span style=\'color:#aaa\'>Empty document.</span>'}</div>`;
+    // Read mode: render HTML in .doc-read-content
+    page.innerHTML = `<div class="doc-read-content">${doc.content||'<span style=\'color:#aaa\'>Empty document.</span>'}</div>`;
   }
 }
+
 
 
 // --- Handlers & Logic ---
@@ -286,10 +285,11 @@ function importData(e) {
   reader.readAsText(file);
 }
 function applyTheme() {
-  document.body.style.background = state.theme==='dark'
-    ? 'linear-gradient(120deg,#222 0%,#2d3748 100%)'
-    : 'linear-gradient(120deg,#f8fafc 0%,#e0e7ef 100%)';
-  document.body.style.color = state.theme==='dark' ? '#f1f5fb' : '#222';
+  if (state.theme==='dark') {
+    document.body.classList.add('dark');
+  } else {
+    document.body.classList.remove('dark');
+  }
 }
 function toggleTheme() {
   state.theme = state.theme==='dark' ? 'light' : 'dark';
