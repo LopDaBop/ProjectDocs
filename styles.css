@@ -1,0 +1,60 @@
+/* ProjectDocs - Minimalistic Low-Poly Style */
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+  min-height: 100vh;
+  color: #232946;
+}
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.low-poly-btn {
+  background: linear-gradient(120deg, #7f9cf5 60%, #a5b4fc 100%);
+  border: none;
+  border-radius: 12px 24px 8px 16px/16px 8px 24px 12px;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 0.7em 1.5em;
+  margin: 0.5em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(127, 156, 245, 0.18);
+  transition: transform 0.15s, box-shadow 0.2s, background 0.3s;
+}
+.low-poly-btn:hover {
+  background: linear-gradient(120deg, #6366f1 60%, #818cf8 100%);
+  transform: translateY(-2px) scale(1.04) rotate(-1deg);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.18);
+}
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(.22,1,.36,1) both;
+}
+.folder, .page {
+  background: #fff;
+  border-radius: 18px 6px 18px 6px/6px 18px 6px 18px;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+  margin: 0.5em 0;
+  padding: 1em;
+  transition: box-shadow 0.2s;
+}
+.folder:hover, .page:hover {
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+}
+input, textarea {
+  border-radius: 8px;
+  border: 1px solid #a5b4fc;
+  padding: 0.5em;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+input:focus, textarea:focus {
+  outline: none;
+  border: 1.5px solid #6366f1;
+}
