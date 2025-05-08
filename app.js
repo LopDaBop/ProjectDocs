@@ -79,20 +79,21 @@ function showSignup() {
   $('#signup-btn').onclick = signup;
   $('#back-landing').onclick = showLanding;
 }
+
+// --- LOGIN & SIGNUP (DEDUPED) ---
 function login() {
-  const u = $('#login-username').value.trim();
+  const u = $('#login-username').value.trim().toLowerCase();
   const p = $('#login-password').value;
-  const users = loadUsers();
-  if (users[u] && users[u].pw === hash(p)) {
-    STATE.user = { username: u };
-    loadState();
-    showHub();
-  } else {
-    $('#login-msg').textContent = 'Invalid username or password.';
+  if (!u || !p) {
+    $('#login-msg').textContent = 'Please enter username and password.';
+    return;
+
+
+
   }
 }
 function signup() {
-  const u = $('#signup-username').value.trim();
+  const u = $('#signup-username').value.trim().toLowerCase();
   const p = $('#signup-password').value;
   if (!u || !p) {
     $('#signup-msg').textContent = 'Please enter username and password.';
@@ -105,51 +106,24 @@ function signup() {
   }
   users[u] = { pw: hash(p) };
   saveUsers(users);
-  // Show success message and button to go to login
+  // Show success message and button to go to login, and debug view
   const app = $('#app');
   app.innerHTML = '';
   const wrap = el('div', 'fade-in-up', `
     <h2>Sign Up</h2>
     <div style="color:#22b573;font-size:1.1em;margin-bottom:1em;">Account created! You can now login.</div>
     <button class="low-poly-btn" id="goto-login">Go to Login</button>
+    <button class="low-poly-btn" id="show-users">Show Registered Users (Debug)</button>
+    <div id="users-debug" style="margin-top:1em;font-size:0.9em;color:#555;"></div>
   `);
   app.appendChild(wrap);
   $('#goto-login').onclick = showLogin;
+  $('#show-users').onclick = function() {
+    const users = loadUsers();
+    $('#users-debug').textContent = JSON.stringify(users, null, 2);
+  };
 }
-// Only keep the correct login and signup functions
-function login() {
-  const u = $('#login-username').value.trim();
-  const p = $('#login-password').value;
-  const users = loadUsers();
-  if (users[u] && users[u].pw === hash(p)) {
-    STATE.user = { username: u };
-    loadState();
-    showHub();
-  } else {
-    $('#login-msg').textContent = 'Invalid username or password.';
-  }
-}
-function signup() {
-  const u = $('#signup-username').value.trim();
-  const p = $('#signup-password').value;
-  if (!u || !p) {
-    $('#signup-msg').textContent = 'Please enter username and password.';
-    return;
-  }
-  const users = loadUsers();
-  if (users[u]) {
-    $('#signup-msg').textContent = 'Username already exists.';
-    return;
-  }
-  users[u] = { pw: hash(p) };
-  saveUsers(users);
-  // Show success message and button to go to login
-  const app = $('#app');
-  app.innerHTML = '';
-  const wrap = el('div', 'fade-in-up', `
-    <h2>Sign Up</h2>
-    <div style="color:#22b573;font-size:1.1em;margin-bottom:1em;">Account created! You can now login.</div>
-    <button class="low-poly-btn" id="goto-login">Go to Login</button>
+
   `);
   app.appendChild(wrap);
   $('#goto-login').onclick = showLogin;
