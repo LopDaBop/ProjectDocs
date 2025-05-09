@@ -1,56 +1,42 @@
-// ProjectDocs doc.html: View/Edit single doc
-// Get doc id from query string
+// ProjectDocs doc.js
+const STORAGE_KEY = 'projectdocs_v4';
+let state = {};
+function load() {
+  const s = localStorage.getItem(STORAGE_KEY);
+  if (s) {
+    try { state = JSON.parse(s); } catch {}
+  }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
 function getParam(key) {
   const url = new URL(window.location.href);
   return url.searchParams.get(key);
 }
 const did = getParam('doc');
-const STORAGE_KEY = 'projectdocs_v3';
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
-if (!state.docs || !state.docs[did]) {
-  document.getElementById('doc-root').textContent = 'Document not found.';
-  throw new Error('Doc not found');
-}
-let doc = state.docs[did];
-let mode = 'read'; // or 'edit'
-
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
+let doc, mode = 'read';
 function render() {
-  const root = document.getElementById('doc-root');
-  root.innerHTML = '';
-  // Toolbar
-  const toolbar = document.createElement('div');
-  toolbar.className = 'docs-toolbar';
-  toolbar.appendChild(btn('← Back', ()=>{window.location.href='index.html?folder='+encodeURIComponent(doc.folderId);}));
-  toolbar.appendChild(btn('Save', ()=>saveDoc()));
-  toolbar.appendChild(btn(mode==='edit'?'View':'Edit', ()=>{mode=mode==='edit'?'read':'edit';render();}));
-  toolbar.appendChild(btn('Rename', renameDoc));
-  toolbar.appendChild(btn('Delete', deleteDoc));
-  root.appendChild(toolbar);
-  // Title
-  let titleNode;
-  if (mode==='edit') {
-    titleNode = document.createElement('input');
-    titleNode.type = 'text';
-    titleNode.value = doc.name;
-    titleNode.className = 'doc-title-input';
-    titleNode.style = 'font-size:1.5em;font-weight:600;margin-bottom:1.2em;border:none;background:transparent;width:100%;outline:none;color:inherit;';
-    titleNode.oninput = e=>{ doc.name = e.target.value; save(); };
-  } else {
-    titleNode = document.createElement('div');
-    titleNode.textContent = doc.name;
-    titleNode.className = 'doc-title';
-    titleNode.style = 'font-size:1.5em;font-weight:600;margin-bottom:1.2em;text-align:center;';
+  doc = state.docs && state.docs[did];
+  if (!doc) {
+    document.getElementById('doc-title').textContent = 'Document not found';
+    document.getElementById('doc-content').innerHTML = '<div class="empty-state">Document not found.</div>';
+    document.getElementById('edit-btn').style.display = 'none';
+    document.getElementById('view-btn').style.display = 'none';
+    document.getElementById('save-btn').style.display = 'none';
+    document.getElementById('rename-btn').style.display = 'none';
+    document.getElementById('delete-btn').style.display = 'none';
+    return;
   }
-  root.appendChild(titleNode);
-  // Content
+  document.getElementById('doc-title').textContent = doc.name;
   if (mode==='edit') {
-    const quillDiv = document.createElement('div');
-    quillDiv.id = 'quill-editor';
-    root.appendChild(quillDiv);
+    document.getElementById('edit-btn').style.display = 'none';
+    document.getElementById('view-btn').style.display = '';
+    document.getElementById('save-btn').style.display = '';
+    const editorDiv = document.createElement('div');
+    editorDiv.id = 'quill-editor';
+    document.getElementById('doc-content').innerHTML = '';
+    document.getElementById('doc-content').appendChild(editorDiv);
     const quill = new Quill('#quill-editor', {
       theme: 'snow',
       modules: {
@@ -65,38 +51,46 @@ function render() {
     quill.on('text-change', ()=>{
       doc.content = quill.root.innerHTML;
     });
+    document.getElementById('save-btn').onclick = function() {
+      save();
+      mode = 'read';
+      render();
+    };
   } else {
-    const content = document.createElement('div');
-    content.className = 'doc-read-content';
-    content.innerHTML = doc.content || '<span style="color:#aaa">Empty document.</span>';
-    root.appendChild(content);
+    document.getElementById('edit-btn').style.display = '';
+    document.getElementById('view-btn').style.display = 'none';
+    document.getElementById('save-btn').style.display = 'none';
+    document.getElementById('doc-content').innerHTML = doc.content || '<span style="color:#aaa">Empty document.</span>';
   }
 }
-
-function btn(label, onclick) {
-  const b = document.createElement('button');
-  b.textContent = label;
-  b.onclick = onclick;
-  b.style.marginRight = '1em';
-  return b;
-}
-function saveDoc() {
-  save();
+function setup() {
+  load();
   render();
+  document.getElementById('edit-btn').onclick = function() { mode = 'edit'; render(); };
+  document.getElementById('view-btn').onclick = function() { mode = 'read'; render(); };
+  document.getElementById('back-btn').onclick = function() {
+    window.location.href = `index.html?folder=${encodeURIComponent(doc.folderId)}`;
+  };
+  document.getElementById('rename-btn').onclick = function() {
+    const name = prompt('Rename document:', doc.name);
+    if (!name) return;
+    doc.name = name;
+    save();
+    render();
+  };
+  document.getElementById('delete-btn').onclick = function() {
+    if (!confirm('Delete this doc?')) return;
+    const folder = state.folders[doc.folderId];
+    if (folder) folder.docs = folder.docs.filter(x=>x!==did);
+    delete state.docs[did];
+    save();
+    window.location.href = `index.html?folder=${encodeURIComponent(doc.folderId)}`;
+  };
+  document.getElementById('theme-toggle-doc').onclick = () => {
+    state.theme = (state.theme==='dark'?'light':'dark');
+    document.body.classList.toggle('dark', state.theme==='dark');
+    save();
+  };
+  document.body.classList.toggle('dark', state.theme==='dark');
 }
-function renameDoc() {
-  const name = prompt('New doc name?', doc.name);
-  if (!name) return;
-  doc.name = name;
-  save();
-  render();
-}
-function deleteDoc() {
-  if (!confirm('Delete this doc?')) return;
-  const fid = doc.folderId;
-  state.folders[fid].docs = state.folders[fid].docs.filter(x=>x!==did);
-  delete state.docs[did];
-  save();
-  window.location.href = 'index.html?folder='+encodeURIComponent(fid);
-}
-render();
+window.onload = setup;
