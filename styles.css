@@ -1,11 +1,15 @@
 body {
   margin: 0;
-  font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
-  background: #ececec;
-  color: #222;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(120deg, #eef2fb 0%, #f8fafc 100%);
+  color: #23272e;
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
 }
+body.doc-page {
+  background: linear-gradient(120deg, #eaf3ff 0%, #f3f7fb 100%);
+}
+
 body.dark {
   background: #22272b;
   color: #f1f5fb;
@@ -124,7 +128,139 @@ body.dark .docs-page .doc-read-content {
 #main-layout {
   display: flex;
   height: calc(100vh - 64px);
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 2px 24px #0001;
+  border-radius: 18px;
+  margin: 2vh 2vw;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
 }
+
+body.doc-page #main-layout, body.doc-page #sidebar {
+  display: none !important;
+}
+
+/* Doc page full screen */
+body.doc-page #doc-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 3vh;
+}
+
+.docs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  background: linear-gradient(90deg, #eaf3ff 0%, #f3f7fb 100%);
+  box-shadow: 0 2px 16px #0001;
+  border-radius: 12px;
+  margin-bottom: 1.5em;
+  padding: 1em 2em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: box-shadow 0.2s;
+}
+body.dark .docs-toolbar {
+  background: linear-gradient(90deg, #23272e 0%, #23272e 100%);
+  box-shadow: 0 2px 16px #0007;
+}
+
+button {
+  background: linear-gradient(90deg, #2563eb 0%, #4f8cff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 2em;
+  font-size: 1em;
+  padding: 0.5em 1.3em;
+  margin: 0.2em;
+  box-shadow: 0 2px 8px #2563eb30;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+button:hover {
+  background: linear-gradient(90deg, #174ea6 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px #2563eb40;
+}
+body.dark button {
+  background: linear-gradient(90deg, #23272e 0%, #2f3640 100%);
+  color: #cbd5e1;
+  box-shadow: 0 2px 8px #0007;
+}
+body.dark button:hover {
+  background: linear-gradient(90deg, #2f3640 0%, #23272e 100%);
+  color: #fff;
+}
+
+.doc-title, .doc-title-input {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin-bottom: 1.2em;
+  text-align: center;
+  background: transparent;
+  color: inherit;
+  border: none;
+  outline: none;
+}
+
+#folders-list .folder-item {
+  background: linear-gradient(90deg, #f3f6fa 0%, #eaf3ff 100%);
+  margin: 0.45em 0.4em;
+  border-radius: 7px;
+  box-shadow: 0 1px 4px #2563eb09;
+  padding: 0.7em 1.2em;
+  display: flex;
+  align-items: center;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+#folders-list .folder-item.selected {
+  background: linear-gradient(90deg, #e6f0ff 0%, #dbeafe 100%);
+  box-shadow: 0 2px 8px #2563eb18;
+}
+#folders-list .folder-item:hover {
+  background: linear-gradient(90deg, #eaf3ff 0%, #e6f0ff 100%);
+}
+body.dark #folders-list .folder-item {
+  background: linear-gradient(90deg, #23272e 0%, #2f3640 100%);
+  box-shadow: 0 1px 4px #0007;
+}
+body.dark #folders-list .folder-item.selected {
+  background: linear-gradient(90deg, #2f3640 0%, #23272e 100%);
+  box-shadow: 0 2px 8px #0009;
+}
+
+.doc-list-item {
+  background: linear-gradient(90deg, #fff 0%, #f3f7fb 100%);
+  margin: 0.45em 0.4em;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px #2563eb09;
+  padding: 0.7em 1.2em;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: 500;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.doc-list-item:hover {
+  background: linear-gradient(90deg, #e6f0ff 0%, #dbeafe 100%);
+  box-shadow: 0 2px 8px #2563eb18;
+}
+body.dark .doc-list-item {
+  background: linear-gradient(90deg, #23272e 0%, #2f3640 100%);
+  box-shadow: 0 1px 4px #0007;
+}
+body.dark .doc-list-item:hover {
+  background: linear-gradient(90deg, #2f3640 0%, #23272e 100%);
+  box-shadow: 0 2px 8px #0009;
+}
+
 #sidebar {
   width: 240px;
   background: #f3f6fa;

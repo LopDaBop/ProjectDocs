@@ -89,7 +89,7 @@ function renderSidebar() {
       el('span', {class:'folder-name'}, f.name),
       el('span', {class:'folder-actions'},
         el('button', {title:'Rename', onclick:e=>{e.stopPropagation();renameFolder(fid);}}, '✎'),
-        el('button', {title:'Delete', onclick:e=>{e.stopPropagation();deleteFolder(fid);}}, '🗑️')
+        el('button', {title:'Delete', onclick:e=>{e.stopPropagation();if(confirm('Delete this folder and all its docs?')) deleteFolder(fid);}}, '🗑️')
       )
     ));
   }
