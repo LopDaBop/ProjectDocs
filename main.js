@@ -26,6 +26,13 @@ function renderFolders() {
     li.className = 'folder-item'+(state.selectedFolder===fid?' selected':'');
     li.tabIndex = 0;
     li.onclick = () => { state.selectedFolder = fid; render(); };
+    // Folder icon
+    const icon = document.createElement('span');
+    icon.className = 'folder-icon';
+    icon.innerHTML = '■';
+    if (f.color) icon.style.background = f.color;
+    li.appendChild(icon);
+    // Folder name
     const name = document.createElement('span');
     name.textContent = f.name;
     name.className = 'folder-name';
@@ -34,8 +41,8 @@ function renderFolders() {
     actions.className = 'folder-actions';
     // Rename button
     const renameBtn = document.createElement('button');
-    renameBtn.textContent = 'Rename';
     renameBtn.title = 'Rename';
+    renameBtn.innerHTML = '✎';
     renameBtn.onclick = e => { e.stopPropagation(); renameFolder(fid); };
     actions.appendChild(renameBtn);
     // Color button
@@ -102,10 +109,49 @@ function renderDocs() {
 function render() {
   renderFolders();
   renderDocs();
-  const folder = state.selectedFolder && state.folders[state.selectedFolder];
-  document.getElementById('current-folder-name').textContent = folder ? folder.name : 'Select a folder';
-  document.getElementById('add-doc').style.display = folder ? '' : 'none';
+  // Folder name at top
+  const folderName = state.selectedFolder && state.folders[state.selectedFolder] ? state.folders[state.selectedFolder].name : '';
+  document.getElementById('current-folder-name').textContent = folderName || 'Select a folder';
+  document.getElementById('add-doc').style.display = state.selectedFolder ? '' : 'none';
+  // Show full folder name above docs list
+  let fullNameDiv = document.getElementById('folder-full-name');
+  if (!fullNameDiv) {
+    fullNameDiv = document.createElement('div');
+    fullNameDiv.id = 'folder-full-name';
+    fullNameDiv.className = 'folder-full-name';
+    document.querySelector('.main-pane').insertBefore(fullNameDiv, document.getElementById('docs-list'));
+  }
+  if (folderName) {
+    fullNameDiv.textContent = folderName;
+    fullNameDiv.style.display = '';
+  } else {
+    fullNameDiv.style.display = 'none';
+  }
 }
+// Sidebar hide/show logic
+window.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const hideBtn = document.getElementById('hide-sidebar');
+  let showBtn;
+  if (hideBtn) {
+    hideBtn.onclick = function() {
+      sidebar.style.display = 'none';
+      showBtn = document.createElement('button');
+      showBtn.className = 'show-sidebar';
+      showBtn.textContent = '⏵';
+      showBtn.title = 'Show sidebar';
+      showBtn.style.position = 'absolute';
+      showBtn.style.left = '0';
+      showBtn.style.top = '1em';
+      showBtn.style.zIndex = '100';
+      document.body.appendChild(showBtn);
+      showBtn.onclick = function() {
+        sidebar.style.display = '';
+        showBtn.remove();
+      };
+    };
+  }
+});
 function addFolder() {
   const name = prompt('Folder name?');
   if (!name) return;
