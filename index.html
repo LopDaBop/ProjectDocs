@@ -9,6 +9,10 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
+      <div class="sidebar-hidden-message" style="display:none;" id="sidebar-hidden-message">
+        <!-- You can customize this sidebar hidden message -->
+        Sidebar is hidden. Click the arrow to show it again.
+      </div>
       <div class="sidebar-header">
         <span class="logo">📁 ProjectDocs</span>
         <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">🌙</button>
@@ -24,6 +28,7 @@
     </aside>
     <main class="main-pane">
       <header class="main-header">
+        <span id="current-folder-name" class="main-title">Select a folder</span>
         <button id="add-doc" title="Add document" style="display:none;">＋ New Doc</button>
       </header>
       <ul id="docs-list" class="docs-list"></ul>

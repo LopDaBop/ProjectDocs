@@ -92,13 +92,6 @@ function renderDocs() {
       li.style.removeProperty('--doc-color');
     }
     li.onclick = () => { window.location.href = `doc.html?doc=${doc.id}`; };
-    // Doc color button
-    const colorBtn = document.createElement('button');
-    colorBtn.className = 'doc-color-btn';
-    colorBtn.title = 'Set doc color';
-    colorBtn.innerHTML = '🎨';
-    colorBtn.onclick = e => { e.stopPropagation(); setDocColor(doc.id); };
-    li.appendChild(colorBtn);
     // Doc name
     const name = document.createElement('span');
     name.textContent = doc.name;
@@ -107,11 +100,20 @@ function renderDocs() {
     // Actions
     const actions = document.createElement('span');
     actions.className = 'doc-actions';
+    // Doc color button
+    const colorBtn = document.createElement('button');
+    colorBtn.className = 'doc-color-btn';
+    colorBtn.title = 'Set doc color';
+    colorBtn.innerHTML = '🎨';
+    colorBtn.onclick = e => { e.stopPropagation(); setDocColor(doc.id); };
+    actions.appendChild(colorBtn);
+    // Rename
     const renameBtn = document.createElement('button');
     renameBtn.title = 'Rename';
     renameBtn.innerHTML = '✎';
     renameBtn.onclick = e => { e.stopPropagation(); renameDoc(doc.id); };
     actions.appendChild(renameBtn);
+    // Delete
     const delBtn = document.createElement('button');
     delBtn.title = 'Delete';
     delBtn.innerHTML = '🗑️';
@@ -124,31 +126,35 @@ function renderDocs() {
 function render() {
   renderFolders();
   renderDocs();
-  // Only show full folder name above docs list
+  // Only show black folder name in header
   const folderName = state.selectedFolder && state.folders[state.selectedFolder] ? state.folders[state.selectedFolder].name : '';
-  let fullNameDiv = document.getElementById('folder-full-name');
-  if (!fullNameDiv) {
-    fullNameDiv = document.createElement('div');
-    fullNameDiv.id = 'folder-full-name';
-    fullNameDiv.className = 'folder-full-name';
-    document.querySelector('.main-pane').insertBefore(fullNameDiv, document.getElementById('docs-list'));
-  }
-  if (folderName) {
-    fullNameDiv.textContent = folderName;
-    fullNameDiv.style.display = '';
-  } else {
-    fullNameDiv.style.display = 'none';
-  }
+  document.getElementById('current-folder-name').textContent = folderName || 'Select a folder';
   document.getElementById('add-doc').style.display = state.selectedFolder ? '' : 'none';
+  // Remove blue folder name above docs list if present
+  let fullNameDiv = document.getElementById('folder-full-name');
+  if (fullNameDiv) fullNameDiv.style.display = 'none';
+  // Show watermark if no folder selected
+  let watermark = document.getElementById('docs-watermark');
+  if (!watermark) {
+    watermark = document.createElement('div');
+    watermark.id = 'docs-watermark';
+    watermark.className = 'docs-watermark';
+    watermark.textContent = 'YOUR WATERMARK HERE'; // <-- You can customize this watermark text
+    document.querySelector('.main-pane').appendChild(watermark);
+  }
+  watermark.style.display = state.selectedFolder ? 'none' : '';
 }
+
 // Sidebar hide/show logic
 window.addEventListener('DOMContentLoaded', function() {
   const sidebar = document.getElementById('sidebar');
   const hideBtn = document.getElementById('hide-sidebar');
+  const hiddenMsg = document.getElementById('sidebar-hidden-message');
   let showBtn;
   if (hideBtn) {
     hideBtn.onclick = function() {
       sidebar.classList.add('hide');
+      if (hiddenMsg) hiddenMsg.style.display = '';
       showBtn = document.createElement('button');
       showBtn.className = 'show-sidebar';
       showBtn.textContent = '⏵';
@@ -156,10 +162,13 @@ window.addEventListener('DOMContentLoaded', function() {
       document.body.appendChild(showBtn);
       showBtn.onclick = function() {
         sidebar.classList.remove('hide');
+        if (hiddenMsg) hiddenMsg.style.display = 'none';
         showBtn.remove();
       };
     };
   }
+  // Hide message by default
+  if (hiddenMsg) hiddenMsg.style.display = 'none';
 });
 function addFolder() {
   const name = prompt('Folder name?');

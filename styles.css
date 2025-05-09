@@ -117,7 +117,36 @@ body.dark {
   font-weight: 500;
   transition: background 0.2s, box-shadow 0.2s, border 0.2s;
   min-width: 0;
+  /* Ensure text is readable on custom backgrounds */
+  overflow: hidden;
 }
+
+.sidebar-hidden-message {
+  margin-top: 2.2em;
+  text-align: center;
+  color: #b3b3b3;
+  font-size: 1.15em;
+  opacity: 0.7;
+  font-style: italic;
+  /* You can customize this text in index.html */
+}
+
+.docs-watermark {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  font-size: 4vw;
+  color: #e0e0e0;
+  opacity: 0.25;
+  user-select: none;
+  pointer-events: none;
+  font-weight: bold;
+  white-space: nowrap;
+  z-index: 0;
+  /* You can customize this text in index.html */
+}
+
 .doc-color-btn {
   background: none;
   border: none;
