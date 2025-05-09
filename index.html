@@ -14,13 +14,17 @@
   <div id="topbar">
     <span id="logo">📁 ProjectDocs</span>
     <input id="search-box" type="search" placeholder="Search folders & docs..." />
-    <button id="toggle-fav" title="Show favorites">★</button>
+
     <button id="export-btn" title="Export data">Export</button>
     <button id="import-btn" title="Import data">Import</button>
     <button id="theme-btn" title="Toggle theme">🌙</button>
   </div>
   <div id="main-layout">
     <nav id="sidebar">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5em 1em 0 1em;">
+        <span style="font-weight:600;font-size:1.1em;">Folders</span>
+        <button id="sidebar-toggle" title="Hide sidebar" style="font-size:1.2em;background:none;border:none;cursor:pointer;">⟨</button>
+      </div>
       <div id="folders-list"></div>
       <button id="add-folder-btn">+ New Folder</button>
     </nav>

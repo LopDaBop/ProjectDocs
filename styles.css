@@ -126,25 +126,23 @@ body.dark .docs-page .doc-read-content {
   height: calc(100vh - 64px);
 }
 #sidebar {
-  width: 260px;
-  background: #f1f5fb;
-  border-right: 1.5px solid #e0e7ef;
-  padding: 2em 1.2em 1em 1.2em;
+  width: 240px;
+  background: #f3f6fa;
+  border-right: 1px solid #dde3ea;
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  align-items: stretch;
+  padding: 0.5em 0 1em 0;
+  min-height: 100vh;
+  transition: background 0.3s, border 0.3s;
+  z-index: 20;
 }
-#folders-list {
-  flex: 1;
-  overflow-y: auto;
+body.dark #sidebar {
+  background: #23272e;
+  border-right: 1px solid #23272e;
 }
-#add-folder-btn {
-  width: 100%;
-  margin-top: 1em;
-  background: #4f8cff;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
+#sidebar[hidden] {
+  display: none !important;
   padding: 0.7em;
   font-size: 1em;
   cursor: pointer;

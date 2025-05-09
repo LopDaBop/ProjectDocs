@@ -3,11 +3,10 @@
 // --- State & Persistence ---
 const STORAGE_KEY = 'projectdocs_v3';
 let state = {
-  folders: {}, // {id: {name, docs: [docId], fav: bool, created, updated}}
-  docs: {},    // {id: {folderId, name, content, fav: bool, created, updated}}
+  folders: {}, // {id: {name, docs: [docId], created, updated}}
+  docs: {},    // {id: {folderId, name, content, created, updated}}
   selectedFolder: null,
   selectedDoc: null,
-  showFav: false,
   search: '',
   theme: 'light'
 };
@@ -44,13 +43,37 @@ window.onload = function() {
   renderTopbar();
   renderMainPane();
   setupHandlers();
+  // Sidebar toggle logic
+  const sidebar = document.getElementById('sidebar');
+  const mainPane = document.getElementById('main-pane');
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  let sidebarHidden = false;
+  sidebarToggle.onclick = function() {
+    sidebarHidden = true;
+    sidebar.setAttribute('hidden', 'true');
+    mainPane.style.marginLeft = '0';
+    // Show button to unhide sidebar
+    if (!document.getElementById('show-sidebar-btn')) {
+      const btn = document.createElement('button');
+      btn.id = 'show-sidebar-btn';
+      btn.textContent = '☰';
+      btn.title = 'Show sidebar';
+      btn.style = 'position:fixed;top:1em;left:1em;z-index:2000;font-size:1.5em;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:0.3em 0.7em;box-shadow:0 2px 8px #0003;cursor:pointer;';
+      btn.onclick = function() {
+        sidebarHidden = false;
+        sidebar.removeAttribute('hidden');
+        mainPane.style.marginLeft = '';
+        btn.remove();
+      };
+      document.body.appendChild(btn);
+    }
+  };
 };
 
 function renderSidebar() {
   const sidebar = document.getElementById('folders-list');
   sidebar.innerHTML = '';
   let folders = Object.entries(state.folders);
-  if (state.showFav) folders = folders.filter(([id, f]) => f.fav);
   if (state.search) folders = folders.filter(([id, f]) => f.name.toLowerCase().includes(state.search.toLowerCase()));
   if (folders.length === 0) {
     sidebar.appendChild(el('div', {style:'color:#888;padding:2em;text-align:center;font-style:italic;'}, 'No folders found.'));
@@ -59,12 +82,15 @@ function renderSidebar() {
   folders.sort((a,b)=>a[1].name.localeCompare(b[1].name));
   for (const [fid, f] of folders) {
     sidebar.appendChild(el('div', {
-      class:'folder-item fade-in'+(state.selectedFolder===fid?' selected':''),
+      class:'folder-item'+(state.selectedFolder===fid?' selected':''),
       tabindex:0,
       onclick:()=>selectFolder(fid)
     },
-      el('span', {}, f.name),
-      el('button', {class:'fav-btn'+(f.fav?' fav':''), title:'Favorite', onclick:(e)=>{e.stopPropagation();toggleFavFolder(fid);}}, '★')
+      el('span', {class:'folder-name'}, f.name),
+      el('span', {class:'folder-actions'},
+        el('button', {title:'Rename', onclick:e=>{e.stopPropagation();renameFolder(fid);}}, '✎'),
+        el('button', {title:'Delete', onclick:e=>{e.stopPropagation();deleteFolder(fid);}}, '🗑️')
+      )
     ));
   }
 }
@@ -135,25 +161,44 @@ function renderDocFullPage(root, did) {
   root.appendChild(bg);
   const page = el('div', {class:'docs-page'});
   bg.appendChild(page);
+  // Toolbar at top: Back, Save, Edit/View, Rename, Delete
+  const toolbar = el('div', {class:'docs-toolbar'},
+    el('button', {
+      style:'background:#2563eb;color:#fff;border-radius:2em;padding:0.5em 1.2em;box-shadow:0 2px 8px #0001;margin-right:1.5em;',
+      onclick:()=>{state.selectedDoc=null; save(); renderMainPane();}
+    }, '← Back'),
+    (docMode==='edit' ?
+      el('button', {id:'save-doc-btn', style:'margin-right:1em;'}, 'Save') :
+      null
+    ),
+    (docMode==='edit' ?
+      el('button', {id:'switch-read-btn', style:'margin-right:1em;'}, 'View') :
+      el('button', {id:'switch-edit-btn', style:'margin-right:1em;'}, 'Edit')
+    ),
+    el('button', {onclick:()=>renameDoc(did), style:'margin-left:2em;'}, 'Rename'),
+    el('button', {onclick:()=>deleteDoc(did), style:'margin-left:0.5em;'}, 'Delete')
+  );
+  bg.insertBefore(toolbar, page);
+  // Doc title at top
+  let titleNode;
+  if (docMode==='edit') {
+    titleNode = document.createElement('input');
+    titleNode.type = 'text';
+    titleNode.value = doc.name;
+    titleNode.className = 'doc-title-input';
+    titleNode.style = 'font-size:1.5em;font-weight:600;margin-bottom:1.2em;border:none;background:transparent;width:100%;outline:none;color:inherit;';
+    titleNode.oninput = e=>{ doc.name = e.target.value; save(); };
+  } else {
+    titleNode = document.createElement('div');
+    titleNode.textContent = doc.name;
+    titleNode.className = 'doc-title';
+    titleNode.style = 'font-size:1.5em;font-weight:600;margin-bottom:1.2em;text-align:center;';
+  }
+  page.appendChild(titleNode);
   if (docMode === 'edit') {
-    // Toolbar above page in edit mode
-    const toolbar = el('div', {class:'docs-toolbar'},
-      el('button', {
-        style:'background:#2563eb;color:#fff;border-radius:2em;padding:0.5em 1.2em;box-shadow:0 2px 8px #0001;margin-right:1.5em;',
-        onclick:()=>{state.selectedDoc=null; save(); renderMainPane();}
-      }, '← Back'),
-      el('span', {class:'doc-title'}, doc.name),
-      el('button', {onclick:()=>renameDoc(did), style:'margin-left:2em;'}, 'Rename'),
-      el('button', {onclick:()=>deleteDoc(did), style:'margin-left:0.5em;'}, 'Delete')
-    );
-    bg.insertBefore(toolbar, page);
     // Quill editor
     const quillDiv = el('div', {id:'quill-editor'});
     page.appendChild(quillDiv);
-    const saveBtn = el('button', {id:'save-doc-btn', style:'margin-top:1.5em;width:120px;align-self:flex-end;'}, 'Save');
-    page.appendChild(saveBtn);
-    const readBtn = el('button', {id:'switch-read-btn', style:'margin-top:1.5em;margin-right:1em;width:120px;align-self:flex-end;'}, 'View');
-    page.appendChild(readBtn);
     // Quill init
     const quill = new Quill('#quill-editor', {
       theme: 'snow',
@@ -166,24 +211,25 @@ function renderDocFullPage(root, did) {
       }
     });
     quill.root.innerHTML = doc.content || '';
-    saveBtn.onclick = function() {
+    document.getElementById('save-doc-btn').onclick = function() {
       doc.content = quill.root.innerHTML;
       saveDoc(did, null);
     };
-    readBtn.onclick = function() {
+    document.getElementById('switch-read-btn').onclick = function() {
       doc.content = quill.root.innerHTML;
       docMode = 'read';
       saveDoc(did, null);
       renderDocFullPage(root, did);
     };
   } else {
-    // View mode: clean, only page content, floating Edit button
-    page.innerHTML = `<div class="doc-read-content">${doc.content||'<span style=\'color:#aaa\'>Empty document.</span>'}</div>`;
-    const editBtn = el('button', {
-      style:'position:fixed;bottom:2.5em;right:3em;z-index:1001;background:#2563eb;color:#fff;font-size:1.1em;padding:1em 2em;border-radius:2em;box-shadow:0 2px 12px #0003;border:none;cursor:pointer;',
-      onclick:()=>{docMode='edit';renderDocFullPage(root, did);}
-    }, 'Edit');
-    root.appendChild(editBtn);
+    // View mode: just content
+    page.appendChild(el('div', {class:'doc-read-content'},
+      doc.content ? el('div', {innerHTML:doc.content}) : el('span', {style:'color:#aaa;'}, 'Empty document.')
+    ));
+    document.getElementById('switch-edit-btn').onclick = function() {
+      docMode = 'edit';
+      renderDocFullPage(root, did);
+    };
   }
 }
 
