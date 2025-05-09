@@ -32,11 +32,6 @@ function renderFolders() {
     li.appendChild(name);
     const actions = document.createElement('span');
     actions.className = 'folder-actions';
-    const renameBtn = document.createElement('button');
-    renameBtn.title = 'Rename';
-    renameBtn.innerHTML = '✎';
-    renameBtn.onclick = e => { e.stopPropagation(); renameFolder(fid); };
-    actions.appendChild(renameBtn);
     const delBtn = document.createElement('button');
     delBtn.title = 'Delete';
     delBtn.innerHTML = '🗑️';
