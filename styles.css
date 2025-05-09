@@ -109,12 +109,18 @@ body.dark .theme-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px #2563eb18;
+  box-shadow: 0 4px 18px #2563eb10, 0 1.5px 0 #e6eaf3;
+  border: 1.5px solid #e6eaf3;
   cursor: pointer;
   font-size: 1.25em;
   font-weight: 600;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, border 0.2s;
 }
+.folder-item.folder-color {
+  background: var(--folder-color, #e6f0ff) !important;
+  border: 2px solid var(--folder-color, #e6f0ff) !important;
+}
+
 .folder-actions button {
   font-size: 1.4em;
   padding: 0.25em 0.6em;

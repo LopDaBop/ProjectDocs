@@ -32,12 +32,33 @@ function renderFolders() {
     li.appendChild(name);
     const actions = document.createElement('span');
     actions.className = 'folder-actions';
+    // Rename button
+    const renameBtn = document.createElement('button');
+    renameBtn.textContent = 'Rename';
+    renameBtn.title = 'Rename';
+    renameBtn.onclick = e => { e.stopPropagation(); renameFolder(fid); };
+    actions.appendChild(renameBtn);
+    // Color button
+    const colorBtn = document.createElement('button');
+    colorBtn.textContent = '🎨';
+    colorBtn.title = 'Set folder color';
+    colorBtn.onclick = e => { e.stopPropagation(); setFolderColor(fid); };
+    actions.appendChild(colorBtn);
+    // Delete button
     const delBtn = document.createElement('button');
     delBtn.title = 'Delete';
     delBtn.innerHTML = '🗑️';
     delBtn.onclick = e => { e.stopPropagation(); if (confirm('Delete this folder and all its docs?')) deleteFolder(fid); };
     actions.appendChild(delBtn);
     li.appendChild(actions);
+    // Apply color if set
+    if (f.color) {
+      li.classList.add('folder-color');
+      li.style.setProperty('--folder-color', f.color);
+    } else {
+      li.classList.remove('folder-color');
+      li.style.removeProperty('--folder-color');
+    }
     list.appendChild(li);
   }
 }
@@ -98,6 +119,19 @@ function renameFolder(fid) {
   const name = prompt('Rename folder:', state.folders[fid].name);
   if (!name) return;
   state.folders[fid].name = name;
+  save();
+  render();
+}
+function setFolderColor(fid) {
+  const current = state.folders[fid].color || '';
+  let color = prompt('Enter hex color (e.g. #e6f0ff):', current);
+  if (!color) return;
+  color = color.trim();
+  if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(color)) {
+    alert('Invalid hex color.');
+    return;
+  }
+  state.folders[fid].color = color;
   save();
   render();
 }
