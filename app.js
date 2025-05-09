@@ -131,38 +131,29 @@ let docMode = 'read';
 function renderDocFullPage(root, did) {
   const doc = state.docs[did];
   root.innerHTML = '';
-  // Fullpage background
   const bg = el('div', {class:'docs-fullpage-bg'});
   root.appendChild(bg);
-  // Toolbar above page
-  const toolbar = el('div', {class:'docs-toolbar'},
-    el('span', {class:'doc-title'}, doc.name),
-    el('button', {
-      style:'margin-right:0.5em;',
-      disabled: docMode==='read',
-      onclick:()=>{docMode='read';renderDocFullPage(root, did);}
-    }, 'Read'),
-    el('button', {
-      disabled: docMode==='edit',
-      onclick:()=>{docMode='edit';renderDocFullPage(root, did);}
-    }, 'Edit'),
-    el('button', {onclick:()=>renameDoc(did), style:'margin-left:1.5em;'}, 'Rename'),
-    el('button', {onclick:()=>deleteDoc(did), style:'margin-left:0.5em;'}, 'Delete'),
-    el('button', {
-      style:'margin-left:2em;background:#2563eb;color:#fff;border-radius:2em;padding:0.5em 1.2em;box-shadow:0 2px 8px #0001;',
-      onclick:()=>{state.selectedDoc=null; save(); renderMainPane();}
-    }, '← Back')
-  );
-  bg.appendChild(toolbar);
-  // Page
   const page = el('div', {class:'docs-page'});
   bg.appendChild(page);
-  if (docMode==='edit') {
+  if (docMode === 'edit') {
+    // Toolbar above page in edit mode
+    const toolbar = el('div', {class:'docs-toolbar'},
+      el('button', {
+        style:'background:#2563eb;color:#fff;border-radius:2em;padding:0.5em 1.2em;box-shadow:0 2px 8px #0001;margin-right:1.5em;',
+        onclick:()=>{state.selectedDoc=null; save(); renderMainPane();}
+      }, '← Back'),
+      el('span', {class:'doc-title'}, doc.name),
+      el('button', {onclick:()=>renameDoc(did), style:'margin-left:2em;'}, 'Rename'),
+      el('button', {onclick:()=>deleteDoc(did), style:'margin-left:0.5em;'}, 'Delete')
+    );
+    bg.insertBefore(toolbar, page);
     // Quill editor
     const quillDiv = el('div', {id:'quill-editor'});
     page.appendChild(quillDiv);
-    const saveBtn = el('button', {id:'save-doc-btn', style:'margin-top:1em;width:120px;align-self:flex-end;'}, 'Save');
+    const saveBtn = el('button', {id:'save-doc-btn', style:'margin-top:1.5em;width:120px;align-self:flex-end;'}, 'Save');
     page.appendChild(saveBtn);
+    const readBtn = el('button', {id:'switch-read-btn', style:'margin-top:1.5em;margin-right:1em;width:120px;align-self:flex-end;'}, 'View');
+    page.appendChild(readBtn);
     // Quill init
     const quill = new Quill('#quill-editor', {
       theme: 'snow',
@@ -179,9 +170,20 @@ function renderDocFullPage(root, did) {
       doc.content = quill.root.innerHTML;
       saveDoc(did, null);
     };
+    readBtn.onclick = function() {
+      doc.content = quill.root.innerHTML;
+      docMode = 'read';
+      saveDoc(did, null);
+      renderDocFullPage(root, did);
+    };
   } else {
-    // Read mode: render HTML in .doc-read-content
+    // View mode: clean, only page content, floating Edit button
     page.innerHTML = `<div class="doc-read-content">${doc.content||'<span style=\'color:#aaa\'>Empty document.</span>'}</div>`;
+    const editBtn = el('button', {
+      style:'position:fixed;bottom:2.5em;right:3em;z-index:1001;background:#2563eb;color:#fff;font-size:1.1em;padding:1em 2em;border-radius:2em;box-shadow:0 2px 12px #0003;border:none;cursor:pointer;',
+      onclick:()=>{docMode='edit';renderDocFullPage(root, did);}
+    }, 'Edit');
+    root.appendChild(editBtn);
   }
 }
 
