@@ -52,16 +52,88 @@ body.dark {
   max-height: calc(100vh - 8em);
 }
 .hide-sidebar {
-  background: none;
+  background: #fff;
   border: none;
   font-size: 1.4em;
   cursor: pointer;
   margin-left: 0.5em;
   color: #888;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #2563eb18;
+  transition: background 0.3s, color 0.3s, transform 0.4s;
+  z-index: 10;
 }
 .hide-sidebar:hover {
   color: var(--primary);
+  background: #e6f0ff;
+  transform: scale(1.12) rotate(-10deg);
 }
+.show-sidebar {
+  position: fixed;
+  top: 2em;
+  left: 0.5em;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.7em;
+  color: #2563eb;
+  box-shadow: 0 2px 8px #2563eb18;
+  padding: 0.2em 0.32em;
+  cursor: pointer;
+  z-index: 1000;
+  opacity: 0.9;
+  transition: background 0.3s, color 0.3s, left 0.4s;
+}
+.show-sidebar:hover {
+  background: #e6f0ff;
+  color: #1741a6;
+  opacity: 1;
+  left: 0.7em;
+}
+.sidebar {
+  transition: transform 0.45s cubic-bezier(.7,.2,.2,1), opacity 0.3s;
+}
+.sidebar.hide {
+  transform: translateX(-120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Doc item color and color button */
+.doc-item {
+  position: relative;
+  background: var(--doc-color, var(--card-bg));
+  border: 1.5px solid var(--doc-color, #e6eaf3);
+  color: var(--text);
+  border-radius: 8px;
+  margin-bottom: 0.6em;
+  padding: 1.1em 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px #2563eb09;
+  cursor: pointer;
+  font-size: 1.08em;
+  font-weight: 500;
+  transition: background 0.2s, box-shadow 0.2s, border 0.2s;
+  min-width: 0;
+}
+.doc-color-btn {
+  background: none;
+  border: none;
+  font-size: 1.1em;
+  margin-right: 0.4em;
+  cursor: pointer;
+  color: #888;
+  border-radius: 6px;
+  padding: 0.07em 0.4em;
+  transition: background 0.2s, color 0.2s;
+}
+.doc-color-btn:hover {
+  background: var(--accent);
+  color: var(--primary);
+}
+
 @media (max-width: 900px) {
   .sidebar {
     width: 100vw;
@@ -250,8 +322,8 @@ body.dark .folder-actions button:hover {
   overflow: hidden;
 }
 .folder-full-name {
-  font-size: 1.08em;
-  font-weight: 500;
+  font-size: 1.18em;
+  font-weight: 600;
   color: var(--primary);
   margin: 0 2em 0.2em 2em;
   text-align: right;

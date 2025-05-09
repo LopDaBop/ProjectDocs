@@ -85,11 +85,26 @@ function renderDocs() {
     const li = document.createElement('li');
     li.className = 'doc-item';
     li.tabIndex = 0;
+    // Doc color
+    if (doc.color) {
+      li.style.setProperty('--doc-color', doc.color);
+    } else {
+      li.style.removeProperty('--doc-color');
+    }
     li.onclick = () => { window.location.href = `doc.html?doc=${doc.id}`; };
+    // Doc color button
+    const colorBtn = document.createElement('button');
+    colorBtn.className = 'doc-color-btn';
+    colorBtn.title = 'Set doc color';
+    colorBtn.innerHTML = '🎨';
+    colorBtn.onclick = e => { e.stopPropagation(); setDocColor(doc.id); };
+    li.appendChild(colorBtn);
+    // Doc name
     const name = document.createElement('span');
     name.textContent = doc.name;
     name.className = 'doc-name';
     li.appendChild(name);
+    // Actions
     const actions = document.createElement('span');
     actions.className = 'doc-actions';
     const renameBtn = document.createElement('button');
@@ -109,11 +124,8 @@ function renderDocs() {
 function render() {
   renderFolders();
   renderDocs();
-  // Folder name at top
+  // Only show full folder name above docs list
   const folderName = state.selectedFolder && state.folders[state.selectedFolder] ? state.folders[state.selectedFolder].name : '';
-  document.getElementById('current-folder-name').textContent = folderName || 'Select a folder';
-  document.getElementById('add-doc').style.display = state.selectedFolder ? '' : 'none';
-  // Show full folder name above docs list
   let fullNameDiv = document.getElementById('folder-full-name');
   if (!fullNameDiv) {
     fullNameDiv = document.createElement('div');
@@ -127,6 +139,7 @@ function render() {
   } else {
     fullNameDiv.style.display = 'none';
   }
+  document.getElementById('add-doc').style.display = state.selectedFolder ? '' : 'none';
 }
 // Sidebar hide/show logic
 window.addEventListener('DOMContentLoaded', function() {
@@ -135,18 +148,14 @@ window.addEventListener('DOMContentLoaded', function() {
   let showBtn;
   if (hideBtn) {
     hideBtn.onclick = function() {
-      sidebar.style.display = 'none';
+      sidebar.classList.add('hide');
       showBtn = document.createElement('button');
       showBtn.className = 'show-sidebar';
       showBtn.textContent = '⏵';
       showBtn.title = 'Show sidebar';
-      showBtn.style.position = 'absolute';
-      showBtn.style.left = '0';
-      showBtn.style.top = '1em';
-      showBtn.style.zIndex = '100';
       document.body.appendChild(showBtn);
       showBtn.onclick = function() {
-        sidebar.style.display = '';
+        sidebar.classList.remove('hide');
         showBtn.remove();
       };
     };
@@ -178,6 +187,19 @@ function setFolderColor(fid) {
     return;
   }
   state.folders[fid].color = color;
+  save();
+  render();
+}
+function setDocColor(did) {
+  const current = state.docs[did].color || '';
+  let color = prompt('Enter hex color (e.g. #e6f0ff):', current);
+  if (!color) return;
+  color = color.trim();
+  if (!/^#([0-9a-fA-F]{3}){1,2}$/.test(color)) {
+    alert('Invalid hex color.');
+    return;
+  }
+  state.docs[did].color = color;
   save();
   render();
 }
