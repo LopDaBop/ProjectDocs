@@ -107,6 +107,13 @@ body.dark #back-btn {
 
 /* Modern glassy sidebar hide/show buttons */
 .hide-sidebar, .show-sidebar {
+  width: 2em;
+  height: 2em;
+  font-size: 1.3em;
+  width: 2em;
+  height: 2em;
+  font-size: 1.3em;
+
   background: rgba(230,240,255,0.96);
   color: #2563eb;
   border: none;
@@ -147,6 +154,9 @@ body.dark .hide-sidebar, body.dark .show-sidebar {
 /* Modern add-folder button (FAB style) */
 #add-folder {
   background: linear-gradient(135deg, #2563eb 65%, #4f8cff 100%);
+  width: 2em;
+  height: 2em;
+  font-size: 1.3em;
   color: #fff;
   border: none;
   border-radius: 50%;

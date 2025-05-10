@@ -139,7 +139,7 @@ function render() {
     watermark = document.createElement('div');
     watermark.id = 'docs-watermark';
     watermark.className = 'docs-watermark';
-    watermark.textContent = 'YOUR WATERMARK HERE'; // <-- You can customize this watermark text
+    watermark.textContent = 'ProjectDocs'; // Subtle watermark for branding
     document.querySelector('.main-pane').appendChild(watermark);
   }
   watermark.style.display = state.selectedFolder ? 'none' : '';
