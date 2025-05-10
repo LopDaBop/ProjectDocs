@@ -505,7 +505,7 @@ body.dark .theme-toggle {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 4px 18px #2563eb10, 0 1.5px 0 #e6eaf3;
-  border: 3px solid #e5e9f2;
+  border: 5px solid #e5e9f2;
   cursor: pointer;
   font-size: 1.08em;
   font-weight: 600;
