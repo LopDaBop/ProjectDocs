@@ -66,6 +66,128 @@ button:active, .doc-toolbar button:active, .doc-toolbar-actions button:active, .
 }
 
 /* Modern animated theme toggle switch */
+
+/* Modern glassy/animated back button on doc page */
+#back-btn {
+  background: rgba(230,240,255,0.85);
+  color: #2563eb;
+  border: none;
+  border-radius: 1.7em;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 0.5em 1.4em;
+  box-shadow: 0 2px 12px #2563eb22, 0 1.5px 0 #e6eaf3;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, box-shadow 0.3s, transform 0.2s;
+  outline: none;
+  margin-right: 1em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  position: relative;
+  overflow: hidden;
+}
+#back-btn:hover, #back-btn:focus {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 6px 24px #2563eb55;
+  transform: scale(1.11) rotate(-3deg);
+}
+#back-btn:active {
+  background: #1741a6;
+  color: #fff;
+  box-shadow: 0 1px 4px #1741a633;
+  transform: scale(0.94);
+}
+body.dark #back-btn {
+  background: rgba(44,54,81,0.95);
+  color: #FFD600;
+  box-shadow: 0 2px 12px #0007;
+}
+
+/* Modern glassy sidebar hide/show buttons */
+.hide-sidebar, .show-sidebar {
+  background: rgba(230,240,255,0.96);
+  color: #2563eb;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.7em;
+  width: 2.6em;
+  height: 2.6em;
+  box-shadow: 0 2px 10px #2563eb22, 0 1.5px 0 #e6eaf3;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, box-shadow 0.3s, transform 0.2s;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-left: 0.5em;
+  margin-right: 0.2em;
+  z-index: 1001;
+}
+.hide-sidebar:hover, .show-sidebar:hover {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 6px 16px #2563eb55;
+  transform: scale(1.11) rotate(-8deg);
+}
+.hide-sidebar:active, .show-sidebar:active {
+  background: #1741a6;
+  color: #fff;
+  box-shadow: 0 1px 4px #1741a633;
+  transform: scale(0.94);
+}
+body.dark .hide-sidebar, body.dark .show-sidebar {
+  background: rgba(44,54,81,0.97);
+  color: #FFD600;
+  box-shadow: 0 2px 10px #0007;
+}
+
+/* Modern add-folder button (FAB style) */
+#add-folder {
+  background: linear-gradient(135deg, #2563eb 65%, #4f8cff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  font-size: 1.7em;
+  font-weight: bold;
+  box-shadow: 0 4px 16px #2563eb33, 0 1.5px 0 #e6eaf3;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s, box-shadow 0.3s, transform 0.2s;
+  outline: none;
+  margin-left: 0.6em;
+  margin-right: 0.2em;
+  z-index: 1001;
+}
+#add-folder:hover, #add-folder:focus {
+  background: linear-gradient(135deg, #4f8cff 80%, #2563eb 100%);
+  box-shadow: 0 8px 24px #2563eb55;
+  transform: scale(1.13) rotate(-8deg);
+}
+#add-folder:active {
+  background: #1741a6;
+  box-shadow: 0 1px 4px #1741a633;
+  transform: scale(0.96);
+}
+body.dark #add-folder {
+  background: linear-gradient(135deg, #23272e 65%, #2563eb 100%);
+  color: #FFD600;
+  box-shadow: 0 2px 10px #0007;
+}
+
+/* Watermark always visible when sidebar hidden */
+.sidebar.hide ~ .main-pane .docs-watermark {
+  display: block !important;
+  opacity: 0.33;
+  pointer-events: none;
+}
+
 .theme-toggle-switch {
   background: none;
   border: none;
