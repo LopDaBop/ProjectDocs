@@ -86,11 +86,14 @@ function setup() {
     save();
     window.location.href = `index.html?folder=${encodeURIComponent(doc.folderId)}`;
   };
-  document.getElementById('theme-toggle-doc').onclick = () => {
-    state.theme = (state.theme==='dark'?'light':'dark');
-    document.body.classList.toggle('dark', state.theme==='dark');
+  document.getElementById('theme-toggle-doc').addEventListener('click', function() {
+    const btn = this;
+    btn.classList.add('toggling');
+    setTimeout(() => btn.classList.remove('toggling'), 800);
+    document.body.classList.toggle('dark');
+    state.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
     save();
-  };
+  });
   document.body.classList.toggle('dark', state.theme==='dark');
 }
 window.onload = setup;

@@ -51,7 +51,150 @@ body.dark {
   min-height: 0;
   max-height: calc(100vh - 8em);
 }
-.hide-sidebar {
+/* Lively button animations for all main, toolbar, and doc page buttons */
+button, .doc-toolbar button, .doc-toolbar-actions button, .doc-actions button, .folder-actions button {
+  transition: background 0.25s, color 0.25s, box-shadow 0.3s, transform 0.3s cubic-bezier(.7,.2,.2,1);
+}
+button:hover, .doc-toolbar button:hover, .doc-toolbar-actions button:hover, .doc-actions button:hover, .folder-actions button:hover {
+  transform: scale(1.11) rotate(-6deg);
+  box-shadow: 0 4px 18px #2563eb33;
+  z-index: 1;
+}
+button:active, .doc-toolbar button:active, .doc-toolbar-actions button:active, .doc-actions button:active, .folder-actions button:active {
+  transform: scale(0.96) rotate(4deg);
+  box-shadow: 0 1px 4px #1741a633;
+}
+
+/* Modern animated theme toggle switch */
+.theme-toggle-switch {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 3.2em;
+  height: 2em;
+  padding: 0;
+  margin: 0 0.7em 0 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  outline: none;
+}
+.theme-toggle-switch .toggle-track {
+  width: 2.8em;
+  height: 1.2em;
+  background: #e6eaf3;
+  border-radius: 1em;
+  position: absolute;
+  left: 0.2em;
+  top: 0.4em;
+  transition: background 0.3s;
+}
+body.dark .theme-toggle-switch .toggle-track {
+  background: #23272e;
+}
+.theme-toggle-switch .toggle-thumb {
+  position: absolute;
+  left: 0.25em;
+  top: -0.15em;
+  width: 1.6em;
+  height: 1.6em;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px #2563eb18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: left 0.5s cubic-bezier(.7,.2,.2,1), background 0.3s, box-shadow 0.3s;
+  z-index: 1;
+  will-change: left, background, box-shadow;
+}
+body.dark .theme-toggle-switch .toggle-thumb {
+  background: #23272e;
+  box-shadow: 0 2px 8px #0007;
+}
+.theme-toggle-switch .toggle-sun, .theme-toggle-switch .toggle-moon {
+  position: absolute;
+  width: 1.3em;
+  height: 1.3em;
+  left: 0.15em;
+  top: 0.15em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 0.45s, transform 0.5s cubic-bezier(.7,.2,.2,1);
+}
+.theme-toggle-switch .toggle-moon {
+  opacity: 0;
+  transform: scale(0.7) rotate(-60deg);
+}
+body.dark .theme-toggle-switch .toggle-sun {
+  opacity: 0;
+  transform: scale(0.7) rotate(60deg);
+}
+body.dark .theme-toggle-switch .toggle-moon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+.theme-toggle-switch .toggle-thumb {
+  left: 0.25em;
+}
+body.dark .theme-toggle-switch .toggle-thumb {
+  left: 1.25em;
+}
+.theme-toggle-switch:active .toggle-thumb {
+  transform: scale(1.13) rotate(18deg);
+  box-shadow: 0 4px 16px #2563eb33;
+}
+.theme-toggle-switch:focus-visible .toggle-thumb {
+  outline: 2px solid #2563eb;
+}
+
+/* Glassy/neon doc page toolbar buttons */
+.doc-toolbar-actions button {
+  margin-left: 0.5em;
+  background: rgba(230,240,255,0.85);
+  color: #2563eb;
+  border: none;
+  border-radius: 1.7em;
+  font-size: 1.1em;
+  font-weight: 600;
+  padding: 0.5em 1.4em;
+  box-shadow: 0 2px 12px #2563eb22, 0 1.5px 0 #e6eaf3;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, box-shadow 0.3s, transform 0.2s;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+body.dark .doc-toolbar-actions button {
+  background: rgba(44,54,81,0.95);
+  color: #FFD600;
+  box-shadow: 0 2px 12px #0007;
+}
+.doc-toolbar-actions button:hover, .doc-toolbar-actions button:focus {
+  background: #2563eb;
+  color: #fff;
+  box-shadow: 0 6px 24px #2563eb55;
+  transform: scale(1.11) rotate(-3deg);
+}
+.doc-toolbar-actions button:active {
+  background: #1741a6;
+  color: #fff;
+  box-shadow: 0 1px 4px #1741a633;
+  transform: scale(0.94);
+}
+.doc-toolbar-actions button[disabled] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+
   background: #fff;
   border: none;
   font-size: 1.4em;
@@ -240,7 +383,7 @@ body.dark .theme-toggle {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 4px 18px #2563eb10, 0 1.5px 0 #e6eaf3;
-  border: 1.5px solid #e6eaf3;
+  border: 3px solid #e5e9f2;
   cursor: pointer;
   font-size: 1.08em;
   font-weight: 600;
