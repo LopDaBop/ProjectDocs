@@ -14,12 +14,17 @@
   --accent-dark: #2f3640;
   --shadow: 0 2px 16px #2563eb18;
 }
+html, body {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
 body {
   margin: 0;
   font-family: 'Segoe UI', Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  min-height: 0;
   transition: background 0.3s, color 0.3s;
 }
 body.dark {
@@ -28,7 +33,9 @@ body.dark {
 }
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
 }
 .sidebar {
   width: 340px;
@@ -43,6 +50,7 @@ body.dark {
   padding-left: 2em;
   padding-right: 2em;
   height: 100vh;
+  min-height: 0;
   position: relative;
   overflow: hidden;
 }
@@ -694,6 +702,7 @@ body.dark .folder-actions button:hover {
   height: 100vh;
   min-height: 0;
   flex: 1 1 0;
+  overflow: hidden;
 
   flex: 1;
   display: flex;
