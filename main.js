@@ -145,31 +145,6 @@ function render() {
   watermark.style.display = state.selectedFolder ? 'none' : '';
 }
 
-// Sidebar hide/show logic
-window.addEventListener('DOMContentLoaded', function() {
-  const sidebar = document.getElementById('sidebar');
-  const hideBtn = document.getElementById('hide-sidebar');
-  const hiddenMsg = document.getElementById('sidebar-hidden-message');
-  let showBtn;
-  if (hideBtn) {
-    hideBtn.onclick = function() {
-      sidebar.classList.add('hide');
-      if (hiddenMsg) hiddenMsg.style.display = '';
-      showBtn = document.createElement('button');
-      showBtn.className = 'show-sidebar';
-      showBtn.textContent = '⏵';
-      showBtn.title = 'Show sidebar';
-      document.body.appendChild(showBtn);
-      showBtn.onclick = function() {
-        sidebar.classList.remove('hide');
-        if (hiddenMsg) hiddenMsg.style.display = 'none';
-        showBtn.remove();
-      };
-    };
-  }
-  // Hide message by default
-  if (hiddenMsg) hiddenMsg.style.display = 'none';
-});
 function addFolder() {
   const name = prompt('Folder name?');
   if (!name) return;

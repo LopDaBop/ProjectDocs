@@ -45,6 +45,22 @@ body.dark {
   height: 100vh;
   position: relative;
 }
+.sidebar-warning {
+  background: #fffbe8;
+  color: #b53a00;
+  padding: 1.2em 1em 1.2em 1em;
+  box-sizing: border-box;
+  border-radius: 10px;
+  margin: 2em 0 0 0;
+  font-size: 1.08em;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #ffb30022;
+  max-width: 100%;
+  border: 1px solid #ffe3a3;
+  width: auto;
+  position: static;
+  display: block;
+}
 #folders-list {
   flex: 1;
   overflow-y: auto;
