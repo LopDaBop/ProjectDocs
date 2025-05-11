@@ -56,12 +56,7 @@ body.dark {
   margin-bottom: 0;
   padding-bottom: 0;
 }
-.sidebar-notice-spacer {
-  height: 2.7em;
-  width: 100%;
-  pointer-events: none;
-  background: none;
-}
+
 #folders-list {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -76,7 +71,7 @@ body.dark {
   color: #eebbbb;
   padding: 0.5em 0.8em;
   border-radius: 7px;
-  margin: 0;
+  margin: 0.5em 0 0 0;
   font-size: 0.97em;
   font-weight: 500;
   box-shadow: 0 1px 4px #0003;
