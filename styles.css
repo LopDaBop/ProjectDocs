@@ -52,9 +52,15 @@ body.dark {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  max-height: calc(100vh - 240px);
+  max-height: calc(100vh - 241.3px); /* Shrink by about 1.3em (20.8px) */
   margin-bottom: 0;
   padding-bottom: 0;
+}
+.sidebar-notice-spacer {
+  height: 2.7em;
+  width: 100%;
+  pointer-events: none;
+  background: none;
 }
 #folders-list {
   flex: 1 1 auto;
