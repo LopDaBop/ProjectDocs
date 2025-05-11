@@ -66,7 +66,7 @@ body.dark {
   color: #eebbbb;
   padding: 0.5em 0.8em;
   border-radius: 7px;
-  margin: 0 0 0.6em 0;
+  margin: 0 0 0.2em 0;
   font-size: 0.97em;
   font-weight: 500;
   box-shadow: 0 1px 4px #0003;
@@ -76,6 +76,7 @@ body.dark {
   display: block;
   position: static;
 }
+
 
 .sidebar-warning-detail {
   color: #bc8888;
