@@ -95,5 +95,27 @@ function setup() {
     save();
   });
   document.body.classList.toggle('dark', state.theme==='dark');
+
+  // Download button
+  const downloadBtn = document.getElementById('download-btn');
+  if (downloadBtn) downloadBtn.onclick = downloadDoc;
 }
+// Download button logic
+function downloadDoc() {
+  if (!doc) return;
+  // Prepare HTML content for download
+  const htmlContent = `<!DOCTYPE html><html><head><meta charset='UTF-8'><title>${doc.name}</title></head><body>${doc.content || ''}</body></html>`;
+  const blob = new Blob([htmlContent], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (doc.name || 'document') + '.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+}
+
 window.onload = setup;

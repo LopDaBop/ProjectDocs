@@ -9,10 +9,11 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-hidden-message" style="display:none;" id="sidebar-hidden-message">
-        <!-- You can customize this sidebar hidden message -->
-        Sidebar is hidden. Click the arrow to show it again.
-      </div>
+      <div class="sidebar-warning" id="sidebar-warning" style="padding:1em 1.2em; color:#b53a00; background:#fffbe8; border-radius:10px; margin:1.2em 1em 0 1em; font-size:1.08em; font-weight:500; box-shadow:0 2px 8px #ffb30022;">
+  <strong>Important:</strong> All folders and docs you create are stored only on <u>this device</u> in your browser (localStorage).<br>
+  <span style="color:#b53a00; font-weight:600;">If you clear your browser data/history, you will <u>lose</u> all your folders and docs.</span><br>
+  <span style="color:#686868;">You can safely close or reopen this tab or your browser, and your data will remain. But it will <u>not</u> sync across devices or browsers.</span>
+</div>
       <div class="sidebar-header">
         <span class="logo">📁 ProjectDocs</span>
         <button class="theme-toggle-switch" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle theme">
