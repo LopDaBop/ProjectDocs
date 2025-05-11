@@ -44,6 +44,40 @@ body.dark {
   padding-right: 2em;
   height: 100vh;
   position: relative;
+  overflow: hidden;
+}
+
+.folders-section {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#folders-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.sidebar-warning {
+  background: #fffbe8;
+  color: #b53a00;
+  padding: 1.1em 1em 1.1em 1em;
+  box-sizing: border-box;
+  border-radius: 10px;
+  margin: 1.2em 0 0.5em 0;
+  font-size: 1.08em;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #ffb30022;
+  max-width: 100%;
+  border: 1px solid #ffe3a3;
+  width: auto;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: block;
 }
 .sidebar-warning {
   background: #fffbe8;
