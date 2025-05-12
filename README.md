@@ -14,7 +14,6 @@ no add doc button for mobile.
 
 
 
-A modern, robust document management web app with folders, docs, and a beautiful UI.
 
 ## Features
 - Create, rename, and delete folders
